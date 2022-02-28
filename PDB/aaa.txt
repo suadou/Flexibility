@@ -1,0 +1,125 @@
+<p><!--
+QBlastInfoBegin
+	Status=READY
+QBlastInfoEnd
+--><p>
+<PRE>
+BLASTP 2.13.0+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro
+A. Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and
+David J. Lipman (1997), "Gapped BLAST and PSI-BLAST: a new
+generation of protein database search programs", Nucleic
+Acids Res. 25:3389-3402.
+
+
+Reference for compositional score matrix adjustment: Stephen
+F. Altschul, John C. Wootton, E. Michael Gertz, Richa
+Agarwala, Aleksandr Morgulis, Alejandro A. Schaffer, and
+Yi-Kuo Yu (2005) "Protein database searches using
+compositionally adjusted substitution matrices", FEBS J.
+272:5101-5109.
+
+
+RID: 1TXZWN38013
+
+
+Database: Non-redundant UniProtKB/SwissProt sequences
+           478,091 sequences; 181,270,864 total letters
+Query= 
+Length=275
+
+
+                                                                   Score     E      Max
+Sequences producing significant alignments:                       (Bits)  Value   Ident
+
+P04189.3 RecName: Full=Subtilisin E; Flags: Precursor [Bacillu...  545     0.0     99%         
+P35835.1 RecName: Full=Subtilisin NAT; AltName: Full=Nattokina...  543     0.0     99%         
+P00783.2 RecName: Full=Subtilisin amylosacchariticus; Flags: P...  541     0.0     98%         
+P29142.1 RecName: Full=Subtilisin J; Flags: Precursor [Geobaci...  541     0.0     98%         
+P07518.1 RecName: Full=Subtilisin; AltName: Full=Alkaline mese...  540     0.0     99%         
+P00782.1 RecName: Full=Subtilisin BPN'; AltName: Full=Alkaline...  456     1e-161  86%         
+P00781.1 RecName: Full=Subtilisin DY [Bacillus licheniformis]      372     6e-130  70%         
+P00780.2 RecName: Full=Subtilisin Carlsberg; Flags: Precursor ...  342     2e-116  70%         
+P29599.1 RecName: Full=Subtilisin BL; AltName: Full=Alkaline p...  322     3e-110  61%         
+P29600.1 RecName: Full=Subtilisin Savinase; AltName: Full=Alka...  313     5e-107  61%         
+P41362.1 RecName: Full=Alkaline protease; Flags: Precursor [Al...  314     1e-105  61%         
+P27693.1 RecName: Full=Alkaline protease; Flags: Precursor [Al...  313     3e-105  60%         
+Q99405.2 RecName: Full=M-protease; Flags: Precursor [Alkalihal...  310     3e-104  60%         
+P20724.1 RecName: Full=Alkaline elastase YaB; Flags: Precursor...  288     2e-95   54%         
+P41363.2 RecName: Full=Thermostable alkaline protease; Flags: ...  277     3e-91   56%         
+P29139.1 RecName: Full=Intracellular serine protease [Paenibac...  231     1e-73   52%         
+P11018.2 RecName: Full=Major intracellular serine protease; Al...  226     9e-72   51%         
+P16396.1 RecName: Full=Minor extracellular protease Epr; Flags...  216     2e-64   46%         
+P58502.1 RecName: Full=Tk-subtilisin; Flags: Precursor [Thermo...  187     2e-55   41%         
+P04072.1 RecName: Full=Thermitase [Thermoactinomyces vulgaris]     180     2e-54   43%         
+P29140.1 RecName: Full=Intracellular alkaline protease [Alkali...  179     9e-54   43%         
+Q45670.1 RecName: Full=Thermophilic serine proteinase; AltName...  179     7e-53   46%         
+C5PCB1.1 RecName: Full=Subtilisin-like protease CPC735_066880;...  147     1e-40   37%         
+I3R794.1 RecName: Full=Halolysin; AltName: Full=Halophilic ser...  149     2e-40   39%         
+P29143.1 RecName: Full=Halolysin; AltName: Full=F-II; Flags: P...  147     1e-39   36%         
+P06873.2 RecName: Full=Proteinase K; AltName: Full=Endopeptida...  143     3e-39   39%         
+Q93LQ6.1 RecName: Full=Fervidolysin; AltName: Full=Keratinase;...  147     4e-39   37%         
+Q5JIZ5.1 RecName: Full=Subtilisin-like serine protease; AltNam...  147     6e-39   42%         
+P80146.3 RecName: Full=Extracellular serine proteinase; Flags:...  141     4e-38   41%         
+Q68GV9.1 RecName: Full=Alkaline serine protease ver112; Flags:...  140     7e-38   39%         
+C5PCX1.1 RecName: Full=Subtilisin-like protease CPC735_015300;...  138     5e-37   42%         
+D4ALV9.1 RecName: Full=Subtilisin-like protease 6; Flags: Prec...  137     1e-36   41%         
+L8FSM5.1 RecName: Full=Subtilisin-like protease 2; AltName: Fu...  136     3e-36   43%         
+P23653.1 RecName: Full=Proteinase R; Flags: Precursor [Parengy...  135     4e-36   38%         
+P23314.1 RecName: Full=Extracellular protease; Flags: Precurso...  138     5e-36   42%         
+O31788.1 RecName: Full=Serine protease AprX [Bacillus subtilis...  135     6e-36   38%         
+C5P5Q3.1 RecName: Full=Subtilisin-like protease CPC735_033790;...  134     1e-35   37%         
+P54423.2 RecName: Full=Cell wall-associated protease; Contains...  138     1e-35   41%         
+P08594.2 RecName: Full=Aqualysin-1; AltName: Full=Aqualysin-I;...  135     4e-35   39%         
+P42780.1 RecName: Full=Extracellular subtilisin-like protease;...  135     5e-35   37%         
+L8GD75.1 RecName: Full=Subtilisin-like protease 3; AltName: Fu...  132     5e-35   38%         
+P29138.1 RecName: Full=Cuticle-degrading protease; AltName: Fu...  132     6e-35   37%         
+Q8J077.1 RecName: Full=Subtilisin-like protease 6; AltName: Al...  132     9e-35   41%         
+E4UPZ4.1 RecName: Full=Subtilisin-like protease 1; Flags: Prec...  133     1e-34   38%         
+P40903.1 RecName: Full=Sexual differentiation process putative...  132     1e-34   40%         
+C5P1W9.1 RecName: Full=Subtilisin-like protease CPC735_035780;...  131     2e-34   43%         
+A1XIH0.1 RecName: Full=Subtilisin-like protease 6; Flags: Prec...  130     5e-34   40%         
+A1XIH1.1 RecName: Full=Subtilisin-like protease 6; Flags: Prec...  130     6e-34   40%         
+D4DKQ4.1 RecName: Full=Subtilisin-like protease 8; Flags: Prec...  130     2e-33   38%         
+D4AX50.1 RecName: Full=Subtilisin-like protease 8; Flags: Prec...  130     2e-33   38%         
+  Database: Non-redundant UniProtKB/SwissProt sequences
+    Posted date:  Feb 25, 2022  3:03 AM
+  Number of letters in database: 181,270,864
+  Number of sequences in database:  478,091
+
+Lambda      K        H
+   0.309    0.125    0.353 
+Gapped
+Lambda      K        H
+   0.267   0.0410    0.140 
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Number of Sequences: 478091
+Number of Hits to DB: 9943524
+Number of extensions: 419008
+Number of successful extensions: 1206
+Number of sequences better than 0.0001: 25
+Number of HSP's better than 0.0001 without gapping: 0
+Number of HSP's gapped: 1135
+Number of HSP's successfully gapped: 26
+Length of query: 275
+Length of database: 181270864
+Length adjustment: 116
+Effective length of query: 159
+Effective length of database: 125812308
+Effective search space: 20004156972
+Effective search space used: 20004156972
+T: 11
+A: 40
+X1: 16 (7.1 bits)
+X2: 38 (14.6 bits)
+X3: 64 (24.7 bits)
+S1: 42 (20.8 bits)
+S2: 112 (47.8 bits)
+ka-blk-alpha gapped: 1.9
+ka-blk-alpha ungapped: 0.7916
+ka-blk-alpha_v gapped: 42.6028
+ka-blk-alpha_v ungapped: 4.96466
+ka-blk-sigma gapped: 43.6362
+
+

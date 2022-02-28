@@ -1,5 +1,7 @@
-import Bio
 import argparse
+from PDB import request
+from Bio import SeqIO
+
 
 parser = argparse.ArgumentParser(
         description="This program develops a flexibility score for proteins. It retreats a parseable text file and a graphycal representation of flexibility scores.")
@@ -12,3 +14,13 @@ parser.add_argument('--output_txt', dest='output_txt_file', action='store',
 parser.add_argument('--output_png', dest='output_png_file', action='store',
                     help='Protein flexibility graphycal representation file.', required=False, default='flexibility_png_output')
 option = parser.parse_args()
+
+print(option.input_file)
+fasta_sequence = SeqIO.parse(open(option.input_file), 'fasta')
+for seq in fasta_sequence:
+
+
+class PDB(object):
+    def __init__(self, query, path):
+        self.query = query
+        self.path = path
