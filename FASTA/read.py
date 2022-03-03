@@ -12,7 +12,7 @@ class Query(object):
     """
 
     def __init__(self, sequence, identifier):
-        self.sequence = sequence
+        self.sequence = str(sequence)
         self.identifier = identifier
 
 
