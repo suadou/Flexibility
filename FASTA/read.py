@@ -7,7 +7,7 @@ from Bio import SeqIO
 
 class Query(object):
     """
-    Query object store the identifier and the sequence of a FASTA protein
+    Query object stores the identifier and the sequence of a FASTA protein
     sequence.
     """
 
@@ -18,8 +18,8 @@ class Query(object):
 
 def FASTA_parser(input_file):
     """
-    FASTA_parser use a FASTA or multi-FASTA protein file path and returns a list
-    of Query objects of each record. 
+    FASTA_parser uses a FASTA or multi-FASTA protein file path and returns a list
+    of Query objects of each record.
     """
     fasta_sequence = SeqIO.parse(open(input_file), 'fasta')
     query_list = []

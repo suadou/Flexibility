@@ -20,7 +20,7 @@ def BLAST_PDB(query):
     return best_hit
 
 
-def dowload_PDB(query, pdb_id, path):
+def download_PDB(query, pdb_id, path):
     """
     Download PDB files from PDB. It returns a pdb file ([identifier].pdb) in the
     path directory. The arguments are the following:
@@ -96,3 +96,14 @@ def download_AlphaFold(query, swissprot_id, path):
     for line in pdb:
         fo.write(line)
     fo.close()
+
+
+class PDB(object):
+    """
+    PDB object stores the Query identifier of the record, the PDB file path
+    downloaded and the percentage of identity of the match.
+    """
+    def __init__(self, identifier, path, identity):
+        self.identifier = identifier
+        self.path = path
+        self.identity = identity
