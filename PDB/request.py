@@ -12,7 +12,7 @@ import re
 
 def BLAST_PDB(query):
     """
-    Using a Query class as input it returns a text file with the best hit
+    Using a Query class as input it returns the best hit
     dictionary from BLASTp search in PDB database.
     """
     blast = prody.blastPDB(query.sequence)
