@@ -1,6 +1,6 @@
 """
-request module search in PDB and SwissProt database using BLAST looking for PDB
-files from X-ray difraction and AlphaFold prediction with th better percentage
+request module search in PDB and SwissProt database using BLASTp looking for PDB
+files from X-ray difraction and AlphaFold prediction with the best percentage
 of identity.
 """
 
