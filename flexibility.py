@@ -3,13 +3,13 @@ from PDB import request
 from FASTA import read
 import threading
 
+
 def AmphiProt(query):
     for seq in request.parse_XML(request.BLAST_sp(query)):
-        try:
-            download_AlphaFold(query, seq[0], './files/PDB')
-            break
-        except:
+        if request.download_AlphaFold(query, seq[0], './files/PDB/') == False:
             continue
+        else:
+            break
 
 
 parser = argparse.ArgumentParser(
@@ -26,7 +26,7 @@ options = parser.parse_args()
 
 print(f"Reading {options.input_file} file.")
 fasta_list = read.FASTA_parser(options.input_file)
-print(f"{len(fasta_list)} records were read.")
+print(f"{len(fasta_list)} record/s was/were read.")
 
 # Threading for API BLASTp search
 threads = len(fasta_list)
