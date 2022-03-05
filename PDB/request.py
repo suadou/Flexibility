@@ -5,7 +5,6 @@ of identity.
 """
 
 from Bio.Blast import NCBIWWW
-import prody
 import requests
 import re
 
