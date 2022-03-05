@@ -8,6 +8,9 @@ from math import sqrt, pi, log10
 import matplotlib.pyplot as plt
 
 class Atom:
+    """
+    Query object storing the information contained for each atom in a PDB file
+    """
     def __init__(self, line):
         self.name = line[11:16].strip()
         self.resName = line[17:20]
@@ -23,6 +26,11 @@ class Atom:
         return self.__dict__[key]
 
 class PDB:
+    """
+    Object parsing the content of a PDB file from a protein obtained through NRM.
+    It only stores information regarding lines starting with 'ATOM' and the number
+    of model to which each set of atoms
+    """
     def __init__(self, file):
         self.file = file
         self.atoms = []
@@ -39,21 +47,30 @@ class PDB:
                 self.atoms.append(atom)
         f.close()
 
-    def get_atoms(self, to_dict=True):
-        """Return a list of all atoms.
+    def get_atoms(self):
+        """Return a list of all atoms"""
+        return self.atoms
 
-        If to_dict is True, each atom is represented as a dictionary.
-        Otherwise, a list of Atom objects is returned."""
-        if to_dict: return [x.__dict__ for x in self.atoms]
-        else: return self.atoms
+def fit_rms(ref_c,c):
 
-    def get_model(self, model_num, to_dict=True):
-        """Return all atoms where MODEL == model_num"""
-        model_atoms = [x for x in self.atoms if x.MODEL == model_num]
-        if to_dict:
-            return [atom.__dict__ for atom in model_atoms]
-        else:
-            return model_atoms
+    # move geometric center to the origin
+    ref_trans = np.average(ref_c, axis=0)
+    ref_c = ref_c - ref_trans
+    c_trans = np.average(c, axis=0)
+    c = c - c_trans
+
+    # covariance matrix
+    C = np.dot(c.T, ref_c)
+
+    # Singular Value Decomposition
+    (r1, s, r2) = np.linalg.svd(C)
+
+    # compute sign (remove mirroring)
+    if np.linalg.det(C) < 0:
+        r2[2,:] *= -1.0
+    U = np.dot(r1, r2)
+    return (c_trans, U, ref_trans)
+
 
 class RMSDcalculator:
     def __init__(self, atoms1, atoms2, name=None):
@@ -62,6 +79,9 @@ class RMSDcalculator:
         self.set_rmsd(xyz1, xyz2)
 
     def get_xyz(self, atoms, name=None):
+        """
+        Converts atom coordinates in PDB file to an array
+        """
         xyz = []
         for atom in atoms:
             if name:
@@ -93,11 +113,8 @@ class NMR(object):
             self.MODELs[atom.MODEL].append(atom)
 
         # set reference(using centroid (one of the MODELs))
-
         ref_index = self.get_centroid()
         self.reference = self.MODELs[ref_index]
-
-
         self.set_RMSF(self.reference)
 
     def get_average_MODEL(self):
@@ -171,25 +188,6 @@ class NMR(object):
         
         self.tempFactor = tempFactor
 
-def fit_rms(ref_c,c):
-    # move geometric center to the origin
-    ref_trans = np.average(ref_c, axis=0)
-    ref_c = ref_c - ref_trans
-    c_trans = np.average(c, axis=0)
-    c = c - c_trans
-
-    # covariance matrix
-    C = np.dot(c.T, ref_c)
-
-    # Singular Value Decomposition
-    (r1, s, r2) = np.linalg.svd(C)
-
-    # compute sign (remove mirroring)
-    if np.linalg.det(C) < 0:
-        r2[2,:] *= -1.0
-    U = np.dot(r1, r2)
-    return (c_trans, U, ref_trans)
-
 def calculation_from_NMR(pdb_file):
     """
     Calculate RMSF of each residue in a PDB file of a protein obtained by NMR. As a reference model for the RMSD computations, the centroid is used (the structure that is least different from the mean structure of all the models in the PDB file)
@@ -197,7 +195,7 @@ def calculation_from_NMR(pdb_file):
     # read PDB file
     pdb = PDB(pdb_file)
     # get backbone atoms
-    atoms = pdb.get_atoms(to_dict=False)
+    atoms = pdb.get_atoms()
 
     # get the mean structure
     nmr = NMR(atoms)
@@ -214,8 +212,8 @@ def calculation_from_NMR(pdb_file):
     template = '{:>3s} {:>2s} {:>3d}  {:<f}'
     #number_of_residue = []
     #flexibility = []
-    #for (chain, resID, resname), rmsf in RMSF_list:
-    #    print(template.format(resname, chain, resID, rmsf))
+    for (chain, resID, resname), rmsf in RMSF_list:
+        print(template.format(resname, chain, resID, rmsf))
     #    number_of_residue.append(resID)
     #    flexibility.append(log10(rmsf))
     #plt.plot(number_of_residue, flexibility, color='red', marker='o')
@@ -248,7 +246,7 @@ def calculation_from_crystal(pdb_file):
     # read PDB file
     pdb = PDB(pdb_file)
     # get backbone atoms
-    atoms = pdb.get_atoms(to_dict=False)
+    atoms = pdb.get_atoms()
     allowed_names = ['C', 'CA', 'N', 'O']
     backbone_atoms = [atom for atom in atoms if atom.name in allowed_names]
 
@@ -302,7 +300,7 @@ def calculation_from_alphafold(pdb_file):
     # read PDB file
     pdb = PDB(pdb_file)
     # get backbone atoms
-    atoms = pdb.get_atoms(to_dict=False)
+    atoms = pdb.get_atoms()
     allowed_names = ['C', 'CA', 'N', 'O']
     backbone_atoms = [atom for atom in atoms if atom.name in allowed_names]
 
