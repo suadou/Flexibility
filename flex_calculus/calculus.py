@@ -27,7 +27,7 @@ class Atom:
 
 class PDB:
     """
-    Object parsing the content of a PDB file from a protein obtained through NRM.
+    Object parsing the content of a PDB file from a protein obtained through NMR.
     It only stores information regarding lines starting with 'ATOM' and the number
     of model to which each set of atoms
     """
@@ -203,27 +203,26 @@ def calculation_from_NMR(pdb_file):
 
     # get the model number of the centroid structure
     centroid_model = nmr.get_centroid(mean_structure)
-    ##print("# model", centroid_model, "is the representative structure")
+    print("# model", centroid_model, "is the representative structure")
 
     # display RMSF by residue
     RMSF_list = list(nmr.RMSF.items())
     RMSF_list.sort()  # sort by chain and residue number
     print("ResName\tChain\tResID\tRMSF")
     template = '{:>3s} {:>2s} {:>3d}  {:<f}'
-    #number_of_residue = []
-    #flexibility = []
+    flexibility = []
     for (chain, resID, resname), rmsf in RMSF_list:
+        flexibility.append(rmsf)
+    for (chain, resID, resname), rmsf in RMSF_list:
+        rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
         print(template.format(resname, chain, resID, rmsf))
-    #    number_of_residue.append(resID)
-    #    flexibility.append(log10(rmsf))
+        
     #plt.plot(number_of_residue, flexibility, color='red', marker='o')
     #plt.title('RMSF Vs Residue number', fontsize=14)
     #plt.xlabel('Residue number', fontsize=14)
     #plt.ylabel('log10(RMSF)', fontsize=14)
     #plt.grid(True)
     #plt.show()
-
-        
 
 def rmsf_Bfactor(atoms):
     """Returns a list of root-mean square fluctuations.
@@ -274,8 +273,13 @@ def calculation_from_crystal(pdb_file):
     template = '{:>3s} {:>2s} {:>3d}  {:<f}'
 
     # output RMSF data for all backbone atoms
+    flexibility = []
+    for rmsf in RMSF_list:
+        flexibility.append(rmsf)
+    
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         values = [atom[key] for key in keys]
+        rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
         values.append(rmsf)
         print(template.format(*values))
 
@@ -328,7 +332,12 @@ def calculation_from_alphafold(pdb_file):
     template = '{:>3s} {:>2s} {:>3d}  {:<f}'
 
     # output RMSF data for all backbone atoms
+    flexibility = []
+    for rmsf in RMSF_list:
+        flexibility.append(rmsf)
+    
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         values = [atom[key] for key in keys]
+        rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
         values.append(rmsf)
         print(template.format(*values))
