@@ -14,5 +14,9 @@ setup(name='flexprot',
           'pandas',
           'matplotlib',
           'seaborn',
-          'argparse'
+          'argparse',
+          'threading',
+          'numpy',
+          're',
+          'math'
           ])
