@@ -5,8 +5,15 @@ of identity.
 """
 
 from Bio.Blast import NCBIWWW
+from Bio.Blast.Applications import NcbiblastpCommandline
 import requests
 import re
+
+
+def BLAST_commandline(query, database):
+    blast_XML = NcbiblastpCommandline(cmd='blastp', query=query.sequence,
+                                      db=database, alignments=0, hitlist_size=50, expect=1e-5, format_type="XML")
+    return blast_XML
 
 
 def BLAST_PDB(query):
@@ -72,12 +79,15 @@ def download_AlphaFold(query, swissprot_id, path):
 def parse_XML(blast_XML):
     """
     parse_XML is a generator function which use a XML BLASTp results from NCBI
-    as input to return a list containing PDB/SwissProt id and perecentage of identity
-    from each match.
+    as input to return a list containing PDB/SwissProt id, perecentage of identity
+    the start and end position, and the gapas from each match.
     """
     swissprot_id = ''
     hsp_alignlen = ''
     hsp_identity = ''
+    start = ''
+    end = ''
+    gaps = []
     for line in blast_XML:
         if re.search('<Hit_id>', line) != None:
             line = line.strip()
@@ -97,13 +107,34 @@ def parse_XML(blast_XML):
             line = line.rstrip()
             line = line.strip('<Hsp_align-len>')
             hsp_alignlen = line.rstrip('</')
-        if swissprot_id and hsp_alignlen and hsp_identity:
+        if re.search('<Hsp_hit-from>', line) != None:
+            line = line.strip()
+            line = line.rstrip()
+            line = line.strip('<Hsp_hit-from>')
+            start = line.rstrip('</')
+        if re.search('<Hsp_hit-to>', line) != None:
+            line = line.strip()
+            line = line.rstrip()
+            line = line.strip('<Hsp_hit-to>')
+            end = line.rstrip('</')
+        if re.search('<Hsp_hseq>', line) != None:
+            line = line.strip()
+            line = line.rstrip()
+            line = line.strip('<Hsp_hseq>')
+            line = line.rstrip('</')
+            for i in range(0, len(line)):
+                if line[i] == '-':
+                    gaps.append(i+1)
+        if swissprot_id and hsp_alignlen and hsp_identity and start and end:
             identity = int(hsp_identity) / int(hsp_alignlen)
-            yield (str(swissprot_id), identity)
+            yield (str(swissprot_id), identity, start, end, gaps)
             swissprot_id = ''
             hsp_alignlen = ''
             hsp_identity = ''
             identity = ''
+            start = ''
+            end = ''
+            gaps = []
 
 
 def check_url(url):
@@ -116,11 +147,16 @@ def check_url(url):
 
 class PDB(object):
     """
-    PDB object stores the Query identifier of the record, the PDB file path
-    downloaded and the percentage of identity of the match.
+    PDB object stores the Query identifier of the record, the PDB identifier,
+    the PDB file path downloaded, the percentage of identity of the match, the
+    position of start and end of the match and the gap position.
     """
 
-    def __init__(self, identifier, path, identity):
+    def __init__(self, query, identifier, path, identity, start, end, gaps):
+        self.query = query
         self.identifier = identifier
         self.path = path
         self.identity = identity
+        self.start = start
+        self.end = end
+        self.gaps = gaps
