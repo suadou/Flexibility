@@ -5,18 +5,18 @@ import threading
 import configparser
 
 
-def AmphiProt(query, local, database=None):
+def AlphaFold(query, local, database=None):
     if local == False:
         BLAST = request.BLAST_sp(query)
     else:
         BLAST = request.BLAST_commandline(query, database)
-    for seq in request.parse_XML(BLAST):
-        if request.download_AlphaFold(query, seq[0], './files/PDB/') == False:
+        BLAST = BLAST[0].split('\n|\r')
+    for seq in request.parse_blast(BLAST):
+        if request.download_AlphaFold(query, seq[0].split('|')[1], './files/PDB/') == False:
             continue
         else:
-            AlphaFold_list.append(request.PDB(
-                query.identifier, seq[0], './files/PDB/' + query.identifier + '_AlphaFold.pdb', seq[1], seq[2], seq[3], seq[4]))
-            break
+            return request.PDB(
+                query.identifier, seq[0], None, './files/PDB/' + query.identifier + '_AlphaFold.pdb', seq[1], seq[2], seq[3], seq[4])
 
 
 def PDB(query, local, database=None):
@@ -24,13 +24,13 @@ def PDB(query, local, database=None):
         BLAST = request.BLAST_PDB(query)
     else:
         BLAST = request.BLAST_commandline(query, database)
-    for seq in request.parse_XML(BLAST):
-        if request.download_PDB(query, seq[0], './files/PDB/') == False:
+        BLAST = BLAST[0].split('\n|\r')
+    for seq in request.parse_blast(BLAST):
+        if request.download_PDB(query, seq[0][0:4], './files/PDB/') == False:
             continue
         else:
-            PDB_list.append(request.PDB(
-                query.identifier, seq[0], './files/PDB/' + query.identifier + '.pdb', seq[1], seq[2], seq[3], seq[4]))
-            break
+            return request.PDB(
+                query.identifier, seq[0], seq[0][5:], './files/PDB/' + query.identifier + '.pdb', seq[1], seq[2], seq[3], seq[4])
 
 
 parser = argparse.ArgumentParser(
@@ -46,21 +46,24 @@ parser.add_argument('--output_png', dest='output_png_file', action='store',
 options = parser.parse_args()
 
 config = configparser.ConfigParser()
-
+config.read('config.ini')
 print(f"Reading {options.input_file} file.")
 fasta_list = read.FASTA_parser(options.input_file)
 print(f"{len(fasta_list)} record/s was/were read.")
-
+PDB_list = []
+AlphaFold_list = []
 # Threading for API BLASTp search
 if config['blast']['local'] == False:
     threads = len(fasta_list)
     jobs = []
-    PDB_list = []
-    AlphaFold_list = []
     for i in range(0, threads):
-        thread = threading.Thread(target=AmphiProt(fasta_list[i], False))
+        print(
+            f"Searching similar sequences to {fasta_list[i].identifier} in PDB and SwissProt databases using BLASTp server...")
+        thread = threading.Thread(
+            target=PDB_list.append(PDB(fasta_list[i], False)))
         jobs.append(thread)
-        thread = threading.Thread(target=PDB(fasta_list[i], False))
+        thread = threading.Thread(target=AlphaFold_list.append(
+            AlphaFold(fasta_list[i], False)))
         jobs.append(thread)
 
     for j in jobs:
@@ -70,10 +73,14 @@ if config['blast']['local'] == False:
         j.join()
 
 else:
-    PDB_list = []
-    AlphaFold_list = []
-    for seq in fasta_list:
-        PDB(seq, True, config['blast']['PDBdb_path'])
-        AmphiProt(seq, True, config['blast']['SwissProtdb_path'])
-
-print(PDB_list)
+    for i in range(0, len(fasta_list)):
+        print(
+            f"Searching similar sequences to {fasta_list[i].identifier} in PDB and SwissProt databases using BLASTp...")
+        PDB_list.append(
+            PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
+        AlphaFold_list.append(
+            AlphaFold(fasta_list[i], True, config['blast']['SwissProtdb_path']))
+        print(
+            f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
+        print(
+            f"AlphaFold match: {AlphaFold_list[i].identifier} ({AlphaFold_list[i].identity:.2f})")
