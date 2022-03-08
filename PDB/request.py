@@ -11,8 +11,10 @@ import re
 
 
 def BLAST_commandline(query, database):
-    blast_XML = NcbiblastpCommandline(cmd='blastp', query=query.sequence,
-                                      db=database, alignments=0, hitlist_size=50, expect=1e-5, format_type="XML")
+    query_string = '>' + query.identifier + '\n' + str(query.sequence)
+    blast_cline = NcbiblastpCommandline(
+        db=database, max_target_seqs=50, evalue=1e-5, outfmt='6 sseqid length nident sstart send qseq')
+    blast_XML = blast_cline(stdin=query_string)
     return blast_XML
 
 
@@ -82,7 +84,7 @@ def parse_XML(blast_XML):
     as input to return a list containing PDB/SwissProt id, perecentage of identity
     the start and end position, and the gapas from each match.
     """
-    swissprot_id = ''
+    id = ''
     hsp_alignlen = ''
     hsp_identity = ''
     start = ''
@@ -90,13 +92,14 @@ def parse_XML(blast_XML):
     gaps = []
     for line in blast_XML:
         if re.search('<Hit_id>', line) != None:
+            print(line)
             line = line.strip()
             line = line.rstrip()
             line = line.strip('<Hit_id>')
             line = line.rstrip('</')
             line = line.strip('sp|')
             line = line.rstrip('|')
-            swissprot_id = line.split('.')[0]
+            id = line.split('.')[0]
         if re.search('<Hsp_identity>', line) != None:
             line = line.strip()
             line = line.rstrip()
@@ -125,16 +128,45 @@ def parse_XML(blast_XML):
             for i in range(0, len(line)):
                 if line[i] == '-':
                     gaps.append(i+1)
-        if swissprot_id and hsp_alignlen and hsp_identity and start and end:
+        if id and hsp_alignlen and hsp_identity and start and end:
             identity = int(hsp_identity) / int(hsp_alignlen)
-            yield (str(swissprot_id), identity, start, end, gaps)
-            swissprot_id = ''
+            yield (str(id), identity, start, end, gaps)
+            id = ''
             hsp_alignlen = ''
             hsp_identity = ''
             identity = ''
             start = ''
             end = ''
             gaps = []
+
+
+def parse_blast(blast):
+    id = ''
+    hsp_alignlen = ''
+    hsp_identity = ''
+    start = ''
+    end = ''
+    gaps = []
+    for line in blast:
+        line = line.rstrip()
+        line = line.split('\t')
+        id = line[0]
+        hsp_alignlen = line[1]
+        hsp_identity = line[2]
+        start = line[3]
+        end = line[4]
+        for i in range(0, len(line[5])):
+            if line[5][i] == '-':
+                gaps.append(i+1)
+        identity = int(hsp_identity) / int(hsp_alignlen)
+        yield (str(id), identity, start, end, gaps)
+        id = ''
+        hsp_alignlen = ''
+        hsp_identity = ''
+        identity = ''
+        start = ''
+        end = ''
+        gaps = []
 
 
 def check_url(url):
@@ -152,9 +184,10 @@ class PDB(object):
     position of start and end of the match and the gap position.
     """
 
-    def __init__(self, query, identifier, path, identity, start, end, gaps):
+    def __init__(self, query, identifier, chain, path, identity, start, end, gaps):
         self.query = query
         self.identifier = identifier
+        self.chain = chain
         self.path = path
         self.identity = identity
         self.start = start
