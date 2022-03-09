@@ -143,7 +143,7 @@ class NMR(object):
         """Return the model number corresponding to the centroid."""
         centroid = None
         min_RMSD = None
-        
+
         if not avg_MODEL:
             avg_MODEL = self.get_average_MODEL()
         for n in self.MODELs:
@@ -155,11 +155,11 @@ class NMR(object):
 
     def distx2(self,x1,x2):
         """Calculate the square of the distance between two coordinates.
-        
+
         Returns a float."""
         distx2 = (x1[0]-x2[0])**2 + (x1[1]-x2[1])**2 + (x1[2]-x2[2])**2
         return distx2
-    
+
     def set_RMSF(self, reference):
         """Sets the self.RMSF attribute."""
         refer_xyz = np.array([[atom.x, atom.y, atom.z] for atom in reference])
@@ -185,10 +185,10 @@ class NMR(object):
             RMSF[(reference[n].chainID, reference[n].resSeq, reference[n].resName)].append(diff[n])
         RMSF = {k:np.mean(RMSF[k]) for k in RMSF}
         self.RMSF = RMSF
-        
+
         self.tempFactor = tempFactor
 
-def calculation_from_NMR(pdb_file):
+def calculation_from_NMR(pdb_file, name_chain, out):
     """
     Calculate RMSF of each residue in a PDB file of a protein obtained by NMR. As a reference model for the RMSD computations, the centroid is used (the structure that is least different from the mean structure of all the models in the PDB file)
     """
@@ -203,26 +203,34 @@ def calculation_from_NMR(pdb_file):
 
     # get the model number of the centroid structure
     centroid_model = nmr.get_centroid(mean_structure)
-    print("# model", centroid_model, "is the representative structure")
+    scores = open(out, 'w')
+    #scores.write("# model", centroid_model, "is the representative structure")
 
     # display RMSF by residue
     RMSF_list = list(nmr.RMSF.items())
     RMSF_list.sort()  # sort by chain and residue number
-    print("ResName\tChain\tResID\tRMSF")
+    scores.write("ResName\tChain\tResID\tRMSF\n")
     template = '{:>3s} {:>2s} {:>3d}  {:<f}'
     flexibility = []
+    number_of_residue = []
     for (chain, resID, resname), rmsf in RMSF_list:
-        flexibility.append(rmsf)
+        if chain == name_chain:
+            flexibility.append(rmsf)
+            number_of_residue.append(resID)
+    new_flexibility = []
     for (chain, resID, resname), rmsf in RMSF_list:
-        rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
-        print(template.format(resname, chain, resID, rmsf))
-        
-    #plt.plot(number_of_residue, flexibility, color='red', marker='o')
-    #plt.title('RMSF Vs Residue number', fontsize=14)
-    #plt.xlabel('Residue number', fontsize=14)
-    #plt.ylabel('log10(RMSF)', fontsize=14)
-    #plt.grid(True)
-    #plt.show()
+        if chain == name_chain:
+            rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
+            new_flexibility.append(rmsf)
+            scores.write(template.format(resname, chain, resID, rmsf))
+            scores.write("\n")
+    scores.close()
+    plt.plot(number_of_residue, new_flexibility, color='red', marker='o')
+    plt.title('RMSF Vs Residue number', fontsize=14)
+    plt.xlabel('Residue number', fontsize=14)
+    plt.ylabel('Normalised RMSF', fontsize=14)
+    plt.grid(True)
+    plt.savefig(out+".png")
 
 def rmsf_Bfactor(atoms):
     """Returns a list of root-mean square fluctuations.
@@ -231,14 +239,14 @@ def rmsf_Bfactor(atoms):
     is True, then the average RMSF for each residue is returned instead."""
     # B-factor of each atom
     atom_bfactors = [atom.tempFactor for atom in atoms]
-    
+
     # RMSF of each atom, with respect to the set
     calc_rmsf = lambda b: sqrt(3 * b / (8 * pi**2))
     RMSFs = map(calc_rmsf, atom_bfactors)
 
     return RMSFs
-    
-def calculation_from_crystal(pdb_file):
+
+def calculation_from_crystal(pdb_file, name_chain, out):
     """
     Calculate the RMSF value of each residue in a PDB file with data from the B-factor (RMSF = sqrt(3*B/(8*pi**2)))
     """
@@ -257,31 +265,46 @@ def calculation_from_crystal(pdb_file):
     residue_list = [backbone_atoms[0]]
     # get a list of mean RMSFs for each residue
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
-        if atom.resSeq != current_resid:
-            means.append(sum(current_rmsfs) / len(current_rmsfs))
-            residue_list.append(atom)
-            current_rmsfs = []
-            current_resid = atom.resSeq
-        current_rmsfs.append(rmsf)
+        if atom.chainID == name_chain:
+            if atom.resSeq != current_resid:
+                means.append(sum(current_rmsfs) / len(current_rmsfs))
+                residue_list.append(atom)
+                current_rmsfs = []
+                current_resid = atom.resSeq
+            current_rmsfs.append(rmsf)
     RMSF_list = means
     backbone_atoms = residue_list
     keys = ['resName', 'chainID', 'resSeq']
-
-    print("ResName\tChain\tResID\tRMSF")
+    scores = open(out, 'w')
+    scores.write("ResName\tChain\tResID\tRMSF\n")
 
     # template string for justified output columns
     template = '{:>3s} {:>2s} {:>3d}  {:<f}'
 
     # output RMSF data for all backbone atoms
     flexibility = []
-    for rmsf in RMSF_list:
-        flexibility.append(rmsf)
-    
+    number_of_residue = []
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         values = [atom[key] for key in keys]
-        rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
-        values.append(rmsf)
-        print(template.format(*values))
+        if values[1] == name_chain:
+            flexibility.append(rmsf)
+            number_of_residue.append(values[2])
+    new_flexibility = []
+    for atom, rmsf in zip(backbone_atoms, RMSF_list):
+        values = [atom[key] for key in keys]
+        if values[1] == name_chain:
+            rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
+            new_flexibility.append(rmsf)
+            values.append(rmsf)
+            scores.write(template.format(*values))
+            scores.write("\n")
+    scores.close()
+    plt.plot(number_of_residue, new_flexibility, color='red', marker='o')
+    plt.title('RMSF Vs Residue number', fontsize=14)
+    plt.xlabel('Residue number', fontsize=14)
+    plt.ylabel('Normalised RMSF', fontsize=14)
+    plt.grid(True)
+    plt.savefig(out+".png")
 
 def rmsf_pLLDT(atoms):
     """Returns a list of root-mean square fluctuations.
@@ -297,7 +320,7 @@ def rmsf_pLLDT(atoms):
 
     return RMSFs
 
-def calculation_from_alphafold(pdb_file):
+def calculation_from_alphafold(pdb_file, name_chain, out):
     """
     Calculate the log10(pLDDT) of each residue of a PDB file obtained from AlphaFold
     """
@@ -316,28 +339,58 @@ def calculation_from_alphafold(pdb_file):
     residue_list = [backbone_atoms[0]]
     # get a list of mean RMSFs for each residue
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
-        if atom.resSeq != current_resid:
-            means.append(sum(current_rmsfs) / len(current_rmsfs))
-            residue_list.append(atom)
-            current_rmsfs = []
-            current_resid = atom.resSeq
-        current_rmsfs.append(rmsf)
+        if atom.chainID == name_chain:
+            if atom.resSeq != current_resid:
+                means.append(sum(current_rmsfs) / len(current_rmsfs))
+                residue_list.append(atom)
+                current_rmsfs = []
+                current_resid = atom.resSeq
+            current_rmsfs.append(rmsf)
     RMSF_list = means
     backbone_atoms = residue_list
     keys = ['resName', 'chainID', 'resSeq']
-
-    print("ResName\tChain\tResID\tRMSF")
+    scores = open(out, 'w')
+    scores.write("ResName\tChain\tResID\tRMSF\n")
 
     # template string for justified output columns
     template = '{:>3s} {:>2s} {:>3d}  {:<f}'
 
     # output RMSF data for all backbone atoms
     flexibility = []
-    for rmsf in RMSF_list:
-        flexibility.append(rmsf)
-    
+    number_of_residue = []
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         values = [atom[key] for key in keys]
-        rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
-        values.append(rmsf)
-        print(template.format(*values))
+        if values[1] == name_chain:
+            flexibility.append(rmsf)
+            number_of_residue.append(values[2])
+    new_flexibility = []
+    for atom, rmsf in zip(backbone_atoms, RMSF_list):
+        values = [atom[key] for key in keys]
+        if values[1] == name_chain:
+            rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
+            values.append(rmsf)
+            new_flexibility.append(rmsf)
+            scores.write(template.format(*values))
+            scores.write("\n")
+    scores.close()
+    plt.plot(number_of_residue, new_flexibility, color='red', marker='o')
+    plt.title('RMSF Vs Residue number', fontsize=14)
+    plt.xlabel('Residue number', fontsize=14)
+    plt.ylabel('Normalised RMSF)', fontsize=14)
+    plt.grid(True)
+    plt.savefig(out+".png")
+
+def general_calculation(pdb_file, name_chain, out):
+    # read PDB file
+    pdb = PDB(pdb_file)
+    f = open(pdb_file, 'r')
+    TYPE = ""
+    for line in f.readlines():
+        if line.startswith('EXPDTA'):
+            TYPE = str(line.split()[1])
+    if TYPE == "X-RAY":
+        calculation_from_crystal(pdb_file, name_chain, out)
+    elif TYPE == "SOLUTION":
+        calculation_from_NMR(pdb_file, name_chain, out)
+    else:
+        calculation_from_alphafold(pdb_file, name_chain, out)
