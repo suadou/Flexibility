@@ -1,6 +1,7 @@
 import argparse
 from PDB import request
 from FASTA import read
+from flex_calculus import calculus
 import threading
 import configparser
 
@@ -44,6 +45,7 @@ parser.add_argument('--output_txt', dest='output_txt_file', action='store',
 parser.add_argument('--output_png', dest='output_png_file', action='store',
                     help='Protein flexibility graphycal representation file.', required=False, default='flexibility_png_output')
 options = parser.parse_args()
+args, leftovers = parser.parse_known_args()
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -84,3 +86,14 @@ else:
             f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
         print(
             f"AlphaFold match: {AlphaFold_list[i].identifier} ({AlphaFold_list[i].identity:.2f})")
+
+def retrieving_score(pdb_prefix, chain_id):
+    print(
+        f"Computing flexibility score on {pdb_prefix}...")
+    calculus.general_calculation('./files/PDB/'+pdb_prefix+'.pdb', chain_id, './files/flex_scores/'+pdb_prefix+'.out')
+
+for i in range(0, len(fasta_list)):
+    if AlphaFold_list[i].identity > PDB_list[i].identity:
+        retrieving_score(fasta_list[i].identifier+"_AlphaFold", PDB_list[i].identifier[-1])
+    else:
+        retrieving_score(fasta_list[i].identifier, PDB_list[i].identifier[-1])
