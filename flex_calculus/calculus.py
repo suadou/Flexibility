@@ -231,6 +231,7 @@ def calculation_from_NMR(pdb_file, name_chain, out):
     plt.ylabel('Normalised RMSF', fontsize=14)
     plt.grid(True)
     plt.savefig(out+".png")
+    plt.clf()
 
 def rmsf_Bfactor(atoms):
     """Returns a list of root-mean square fluctuations.
@@ -309,6 +310,7 @@ def calculation_from_crystal(pdb_file, name_chain, out):
     plt.ylabel('Normalised RMSF', fontsize=14)
     plt.grid(True)
     plt.savefig(out+".png")
+    plt.clf()
 
 def rmsf_pLLDT(atoms):
     """Returns a list of root-mean square fluctuations.
@@ -380,6 +382,7 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
     plt.ylabel('Normalised RMSF)', fontsize=14)
     plt.grid(True)
     plt.savefig(out+".png")
+    plt.clf()
 
 def general_calculation(pdb_file, name_chain, out):
     # read PDB file
