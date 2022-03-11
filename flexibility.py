@@ -94,6 +94,6 @@ def retrieving_score(pdb_prefix, chain_id):
 
 for i in range(0, len(fasta_list)):
     if AlphaFold_list[i].identity > PDB_list[i].identity:
-        retrieving_score(fasta_list[i].identifier+"_AlphaFold", PDB_list[i].identifier[-1])
+        retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
     else:
         retrieving_score(fasta_list[i].identifier, PDB_list[i].identifier[-1])
