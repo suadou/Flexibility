@@ -261,8 +261,12 @@ def calculation_from_crystal(pdb_file, name_chain, out):
     RMSF_list = rmsf_Bfactor(backbone_atoms)
 
     means, current_rmsfs = [], []
-    current_resid = backbone_atoms[0].resSeq
-    residue_list = [backbone_atoms[0]]
+    counter = 0
+    for atom in atoms:
+        if (atom.chainID == name_chain) and (counter == 0):
+            current_resid = atom.resSeq
+            residue_list = [backbone_atoms[0]]
+            counter = 1
     # get a list of mean RMSFs for each residue
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         if atom.chainID == name_chain:
@@ -339,13 +343,12 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
     residue_list = [backbone_atoms[0]]
     # get a list of mean RMSFs for each residue
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
-        if atom.chainID == name_chain:
-            if atom.resSeq != current_resid:
-                means.append(sum(current_rmsfs) / len(current_rmsfs))
-                residue_list.append(atom)
-                current_rmsfs = []
-                current_resid = atom.resSeq
-            current_rmsfs.append(rmsf)
+        if atom.resSeq != current_resid:
+            means.append(sum(current_rmsfs) / len(current_rmsfs))
+            residue_list.append(atom)
+            current_rmsfs = []
+            current_resid = atom.resSeq
+        current_rmsfs.append(rmsf)
     RMSF_list = means
     backbone_atoms = residue_list
     keys = ['resName', 'chainID', 'resSeq']
@@ -360,18 +363,16 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
     number_of_residue = []
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         values = [atom[key] for key in keys]
-        if values[1] == name_chain:
-            flexibility.append(rmsf)
-            number_of_residue.append(values[2])
+        flexibility.append(rmsf)
+        number_of_residue.append(values[2])
     new_flexibility = []
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         values = [atom[key] for key in keys]
-        if values[1] == name_chain:
-            rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
-            values.append(rmsf)
-            new_flexibility.append(rmsf)
-            scores.write(template.format(*values))
-            scores.write("\n")
+        rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
+        values.append(rmsf)
+        new_flexibility.append(rmsf)
+        scores.write(template.format(*values))
+        scores.write("\n")
     scores.close()
     plt.plot(number_of_residue, new_flexibility, color='red', marker='o')
     plt.title('RMSF Vs Residue number', fontsize=14)
