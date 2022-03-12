@@ -78,14 +78,22 @@ else:
     for i in range(0, len(fasta_list)):
         print(
             f"Searching similar sequences to {fasta_list[i].identifier} in PDB and SwissProt databases using BLASTp...")
-        PDB_list.append(
-            PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
-        AlphaFold_list.append(
-            AlphaFold(fasta_list[i], True, config['blast']['SwissProtdb_path']))
-        print(
-            f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
-        print(
-            f"AlphaFold match: {AlphaFold_list[i].identifier} ({AlphaFold_list[i].identity:.2f})")
+        try:
+            PDB_list.append(
+                PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
+            print(
+                f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
+        except IndexError:
+            PDB_list.append(None)
+            print(f"No PDB match was found")
+        try:
+            AlphaFold_list.append(
+                AlphaFold(fasta_list[i], True, config['blast']['SwissProtdb_path']))
+            print(
+                f"AlphaFold match: {AlphaFold_list[i].identifier} ({AlphaFold_list[i].identity:.2f})")
+        except IndexError:
+            AlphaFold_list.append(None)
+            print(f"No PDB match was found")
 
 def retrieving_score(pdb_prefix, chain_id):
     print(
@@ -93,7 +101,15 @@ def retrieving_score(pdb_prefix, chain_id):
     calculus.general_calculation('./files/PDB/'+pdb_prefix+'.pdb', chain_id, './files/flex_scores/'+pdb_prefix+'.out')
 
 for i in range(0, len(fasta_list)):
-    if AlphaFold_list[i].identity > PDB_list[i].identity:
+    if AlphaFold_list[i]!=None and PDB_list[i]!=None:
+        if AlphaFold_list[i].identity > PDB_list[i].identity:
+            retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
+        else:
+            retrieving_score(fasta_list[i].identifier, PDB_list[i].identifier[-1])
+    elif AlphaFold_list[i]!=None and PDB_list[i]==None:
         retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
-    else:
+    elif AlphaFold_list[i]==None and PDB_list[i]!=None:
         retrieving_score(fasta_list[i].identifier, PDB_list[i].identifier[-1])
+    else:
+        print("No PDB files were obtained. Flexibility cannot be calculated")
+
