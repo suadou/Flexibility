@@ -1,5 +1,9 @@
 """
-Calculate the flexibility score from a PDB file of different origins
+Calculate the flexibility score from a PDB file of different origins.
+
+Given a certain PDB file as input, the program identifies its source
+(NMR, X-ray or AlphaFold prediction) and calculates an appropriate flexibility
+score for each residue in described in the file (only considering backbone atoms).
 """
 import copy
 import numpy as np
@@ -8,9 +12,7 @@ from math import sqrt, pi, log10
 import matplotlib.pyplot as plt
 
 class Atom:
-    """
-    Query object storing the information contained for each atom in a PDB file
-    """
+    """ Class storing the information given for each atom in the input PDB file. """
     def __init__(self, line):
         self.name = line[11:16].strip()
         self.resName = line[17:20]
@@ -28,8 +30,9 @@ class Atom:
 class PDB:
     """
     Object parsing the content of a PDB file from a protein obtained through NMR.
-    It only stores information regarding lines starting with 'ATOM' and the number
-    of model to which each set of atoms
+    
+    It only stores information regarding lines starting with 'ATOM' as well as the 
+    number of model to which each set of atoms corresponds.
     """
     def __init__(self, file):
         self.file = file
@@ -37,6 +40,7 @@ class PDB:
         self.parse()
 
     def parse(self):
+        """Store the characteristics of the NMR PDB file."""    
         MODEL = None
         f = open(self.file, 'r')
         for line in f.readlines():
@@ -48,24 +52,25 @@ class PDB:
         f.close()
 
     def get_atoms(self):
-        """Return a list of all atoms"""
+        """Return a list of all atoms in the PDB file"""
         return self.atoms
 
 def fit_rms(ref_c,c):
 
-    # move geometric center to the origin
+    # Move geometric center of the structure to the origin of the coordinate
+    # system
     ref_trans = np.average(ref_c, axis=0)
     ref_c = ref_c - ref_trans
     c_trans = np.average(c, axis=0)
     c = c - c_trans
 
-    # covariance matrix
+    # Generate the covariance matrix
     C = np.dot(c.T, ref_c)
 
-    # Singular Value Decomposition
+    # Obtain the Singular Value Decomposition
     (r1, s, r2) = np.linalg.svd(C)
 
-    # compute sign (remove mirroring)
+    # Compute sign (remove mirroring)
     if np.linalg.det(C) < 0:
         r2[2,:] *= -1.0
     U = np.dot(r1, r2)
@@ -73,15 +78,14 @@ def fit_rms(ref_c,c):
 
 
 class RMSDcalculator:
+    """Object containing the methods necessary to calculate the RMSD value from a PDB NMR file."""
     def __init__(self, atoms1, atoms2, name=None):
         xyz1 = self.get_xyz(atoms1, name=name)
         xyz2 = self.get_xyz(atoms2, name=name)
         self.set_rmsd(xyz1, xyz2)
 
     def get_xyz(self, atoms, name=None):
-        """
-        Converts atom coordinates in PDB file to an array
-        """
+        """Converts atom coordinates in the PDB file to an array object."""
         xyz = []
         for atom in atoms:
             if name:
@@ -90,34 +94,45 @@ class RMSDcalculator:
         return np.array(xyz)
 
     def set_rmsd(self, c1, c2):
+        """Calculates the RMSD value for two NMR structures."""
         self.rmsd = 0.0
         self.c_trans, self.U, self.ref_trans = fit_rms(c1, c2)
         new_c2 = np.dot(c2 - self.c_trans, self.U) + self.ref_trans
         self.rmsd = np.sqrt( np.average( np.sum( ( c1 - new_c2 )**2, axis=1 ) ) )
 
     def get_aligned_coord(self, atoms, name=None):
+        """Calculates the coordinates of a structure relative to a reference structure"""
         new_c2 = copy.deepcopy(atoms)
         for atom in new_c2:
             atom.x, atom.y, atom.z = np.dot(np.array([atom.x, atom.y, atom.z]) - self.c_trans, self.U) + self.ref_trans
         return new_c2
 
 class NMR(object):
+    """
+    Object containing the parsing of NMR files.
+    
+    It calculates the average structure among the models and retrieves the model that has 
+    the highest similarity to it.
+    """
     def __init__(self, atoms):
-        #read each MODEL
+        # Read each MODEL
         self.MODELs = {}
         for atom in atoms:
+            # Go through the different MODELs in the file
             if atom.MODEL not in self.MODELs:
                 self.MODELs[atom.MODEL] = []
+            # Choose only backbone atoms
             if atom.name not in ['C', 'CA', 'N', 'O']:
                 continue
             self.MODELs[atom.MODEL].append(atom)
 
-        # set reference(using centroid (one of the MODELs))
+        # Set reference (using a centroid, qhich is one of the MODELs)
         ref_index = self.get_centroid()
         self.reference = self.MODELs[ref_index]
         self.set_RMSF(self.reference)
 
     def get_average_MODEL(self):
+        """Calculates the average model among the coordinates of all the NMR models."""
         reference = self.MODELs[1]
         XYZ = []
         for n in self.MODELs:
@@ -126,7 +141,7 @@ class NMR(object):
             xyz = np.array([[atom.x, atom.y, atom.z] for atom in xyz])
             XYZ.append(xyz)
 
-        # set average structure
+        # Determine and return average structure
         m,n = xyz.shape
         sum_xyz = np.zeros((m,n))
         for xyz in XYZ:
@@ -140,7 +155,7 @@ class NMR(object):
         return avg_MODEL
 
     def get_centroid(self, avg_MODEL = None):
-        """Return the model number corresponding to the centroid."""
+        """Return the MODEL number corresponding to the centroid."""
         centroid = None
         min_RMSD = None
 
@@ -154,9 +169,7 @@ class NMR(object):
         return n_centroid
 
     def distx2(self,x1,x2):
-        """Calculate the square of the distance between two coordinates.
-
-        Returns a float."""
+        """Calculate the square of the distance between two coordinates."""
         distx2 = (x1[0]-x2[0])**2 + (x1[1]-x2[1])**2 + (x1[2]-x2[2])**2
         return distx2
 
@@ -170,8 +183,8 @@ class NMR(object):
         for j in range(natom):
             diff.append(0.)
             for i in self.MODELs:
-                # differences between the states and reference_state for each atom.
-                diff[j] += self.distx2(np.array([self.MODELs[i][j].x, self.MODELs[i][j].y, self.MODELs[i][j].z]), refer_xyz[j]) # d^2
+                # Differences between the state and the reference_state for each atom.
+                diff[j] += self.distx2(np.array([self.MODELs[i][j].x, self.MODELs[i][j].y, self.MODELs[i][j].z]), refer_xyz[j])
             diff[j] = np.sqrt(diff[j]/len(self.MODELs))
 
             if not (self.MODELs[i][j].chainID, self.MODELs[i][j].resSeq, self.MODELs[i][j].name) in tempFactor:
@@ -190,41 +203,55 @@ class NMR(object):
 
 def calculation_from_NMR(pdb_file, name_chain, out):
     """
-    Calculate RMSF of each residue in a PDB file of a protein obtained by NMR. As a reference model for the RMSD computations, the centroid is used (the structure that is least different from the mean structure of all the models in the PDB file)
+    Calculate RMSF of each residue in a PDB file of a protein obtained by NMR.
+    
+    As a reference model for the RMSD computations, the centroid is used (the structure
+    that is least different from the mean structure of all the models in the PDB file).
     """
-    # read PDB file
+    # Read PDB file
     pdb = PDB(pdb_file)
-    # get backbone atoms
+    # Get backbone atoms
     atoms = pdb.get_atoms()
 
-    # get the mean structure
+    # Get the mean structure
     nmr = NMR(atoms)
     mean_structure = nmr.reference
 
-    # get the model number of the centroid structure
+    # Get the model number of the centroid structure
     centroid_model = nmr.get_centroid(mean_structure)
     scores = open(out, 'w')
-    #scores.write("# model", centroid_model, "is the representative structure")
 
-    # display RMSF by residue
+    # Write RMSF by residue to the output file
     RMSF_list = list(nmr.RMSF.items())
-    RMSF_list.sort()  # sort by chain and residue number
+    
+    # Sort the values by chain and residue number
+    RMSF_list.sort()  
+    
+    # Write the header of the output file
     scores.write("ResName\tChain\tResID\tRMSF\n")
     template = '{:>3s} {:>2s} {:>3d}  {:<f}'
+    
+    # Generate an array with flexibility scores
     flexibility = []
     number_of_residue = []
     for (chain, resID, resname), rmsf in RMSF_list:
         if chain == name_chain:
             flexibility.append(rmsf)
             number_of_residue.append(resID)
+    
+    # Normalise the flexibility scores of the array
     new_flexibility = []
     for (chain, resID, resname), rmsf in RMSF_list:
         if chain == name_chain:
             rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
             new_flexibility.append(rmsf)
+            
+            # Write the information on each residue to the output file
             scores.write(template.format(resname, chain, resID, rmsf))
             scores.write("\n")
     scores.close()
+    
+    # Generate the graphical representation of flexibility scores
     plt.plot(number_of_residue, new_flexibility, color='red', marker='o')
     plt.title('RMSF Vs Residue number', fontsize=14)
     plt.xlabel('Residue number', fontsize=14)
@@ -234,14 +261,12 @@ def calculation_from_NMR(pdb_file, name_chain, out):
     plt.clf()
 
 def rmsf_Bfactor(atoms):
-    """Returns a list of root-mean square fluctuations.
-
-    By default, the RMSF of each atom in atoms is returned. If by_residue
-    is True, then the average RMSF for each residue is returned instead."""
-    # B-factor of each atom
+    """Returns a list of root-mean square fluctuations (RMSF) for each atom in the PDB."""
+    
+    # Extrac the B-factor of each atom in the PDB file
     atom_bfactors = [atom.tempFactor for atom in atoms]
 
-    # RMSF of each atom, with respect to the set
+    # Obtain the RMSF of each atom, with respect to the set
     calc_rmsf = lambda b: sqrt(3 * b / (8 * pi**2))
     RMSFs = map(calc_rmsf, atom_bfactors)
 
@@ -249,26 +274,33 @@ def rmsf_Bfactor(atoms):
 
 def calculation_from_crystal(pdb_file, name_chain, out):
     """
-    Calculate the RMSF value of each residue in a PDB file with data from the B-factor (RMSF = sqrt(3*B/(8*pi**2)))
+    Calculate RMSF of each residue in a PDB file of a protein obtained by X-ray.
+    
+    The RMSF is calculated from the B-factor values (RMSF = sqrt(3*B/(8*pi**2))).
     """
-    # read PDB file
+
+    # Read PDB file
     pdb = PDB(pdb_file)
-    # get backbone atoms
+    
+    # Extract only backbone atoms
     atoms = pdb.get_atoms()
     allowed_names = ['C', 'CA', 'N', 'O']
     backbone_atoms = [atom for atom in atoms if atom.name in allowed_names]
 
-    # get RMSF of all backbone atoms
+    # Calculate RMSF of all backbone atoms
     RMSF_list = rmsf_Bfactor(backbone_atoms)
 
     means, current_rmsfs = [], []
     counter = 0
+    
+    # Choose the adequate chain based on the matching PDB
     for atom in atoms:
         if (atom.chainID == name_chain) and (counter == 0):
             current_resid = atom.resSeq
             residue_list = [backbone_atoms[0]]
             counter = 1
-    # get a list of mean RMSFs for each residue
+    
+    # Get a list of mean RMSFs for each residue
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         if atom.chainID == name_chain:
             if atom.resSeq != current_resid:
@@ -281,12 +313,12 @@ def calculation_from_crystal(pdb_file, name_chain, out):
     backbone_atoms = residue_list
     keys = ['resName', 'chainID', 'resSeq']
     scores = open(out, 'w')
+    
+    # Write the header of the output file
     scores.write("ResName\tChain\tResID\tRMSF\n")
-
-    # template string for justified output columns
     template = '{:>3s} {:>2s} {:>3d}  {:<f}'
 
-    # output RMSF data for all backbone atoms
+    # Generate an array with flexibility scores
     flexibility = []
     number_of_residue = []
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
@@ -294,6 +326,8 @@ def calculation_from_crystal(pdb_file, name_chain, out):
         if values[1] == name_chain:
             flexibility.append(rmsf)
             number_of_residue.append(values[2])
+    
+    # Normalise the flexibility scores of the array
     new_flexibility = []
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         values = [atom[key] for key in keys]
@@ -304,6 +338,8 @@ def calculation_from_crystal(pdb_file, name_chain, out):
             scores.write(template.format(*values))
             scores.write("\n")
     scores.close()
+    
+    # Generate the graphical representation of flexibility scores
     plt.plot(number_of_residue, new_flexibility, color='red', marker='o')
     plt.title('RMSF Vs Residue number', fontsize=14)
     plt.xlabel('Residue number', fontsize=14)
@@ -313,37 +349,39 @@ def calculation_from_crystal(pdb_file, name_chain, out):
     plt.clf()
 
 def rmsf_pLLDT(atoms):
-    """Returns a list of root-mean square fluctuations.
-
-    By default, the RMSF of each atom in atoms is returned. If by_residue
-    is True, then the average RMSF for each residue is returned instead."""
-    # B-factor of each atom
+    """Returns a list of values assumed to RMSF for each atom in the PDB."""
+    
+    # Extrac the pLLDT value of each atom in the PDB file
     atom_pLLDT = [atom.tempFactor for atom in atoms]
 
-    # RMSF of each atom, with respect to the set
-    calc_rmsf = lambda p: log10(p)
+    # Obtain the RMSF of each atom, with respect to the set
+    calc_rmsf = lambda p: log10(100-p)
     RMSFs = map(calc_rmsf, atom_pLLDT)
 
     return RMSFs
 
 def calculation_from_alphafold(pdb_file, name_chain, out):
     """
-    Calculate the log10(pLDDT) of each residue of a PDB file obtained from AlphaFold
+    Calculate RMSF of each residue in a PDB file predicted by AlphaFold.
+    
+    The RMSF is calculated from the pLDDT values (RMSF = log10(100-pLDDT)).
     """
-    # read PDB file
+    # Read PDB file
     pdb = PDB(pdb_file)
-    # get backbone atoms
+    
+    # Extract only backbone atoms
     atoms = pdb.get_atoms()
     allowed_names = ['C', 'CA', 'N', 'O']
     backbone_atoms = [atom for atom in atoms if atom.name in allowed_names]
 
-    # get RMSF of all backbone atoms
+    # Calculate RMSF of all backbone atoms
     RMSF_list = rmsf_pLLDT(backbone_atoms)
 
     means, current_rmsfs = [], []
     current_resid = backbone_atoms[0].resSeq
     residue_list = [backbone_atoms[0]]
-    # get a list of mean RMSFs for each residue
+    
+    # Get a list of mean RMSFs for each residue
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         if atom.resSeq != current_resid:
             means.append(sum(current_rmsfs) / len(current_rmsfs))
@@ -355,18 +393,20 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
     backbone_atoms = residue_list
     keys = ['resName', 'chainID', 'resSeq']
     scores = open(out, 'w')
+    
+    # Write the header of the output file
     scores.write("ResName\tChain\tResID\tRMSF\n")
-
-    # template string for justified output columns
     template = '{:>3s} {:>2s} {:>3d}  {:<f}'
 
-    # output RMSF data for all backbone atoms
+    # Generate an array with flexibility scores
     flexibility = []
     number_of_residue = []
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         values = [atom[key] for key in keys]
         flexibility.append(rmsf)
         number_of_residue.append(values[2])
+    
+    # Normalise the flexibility scores of the array
     new_flexibility = []
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         values = [atom[key] for key in keys]
@@ -376,6 +416,8 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
         scores.write(template.format(*values))
         scores.write("\n")
     scores.close()
+    
+    # Generate the graphical representation of flexibility scores
     plt.plot(number_of_residue, new_flexibility, color='red', marker='o')
     plt.title('RMSF Vs Residue number', fontsize=14)
     plt.xlabel('Residue number', fontsize=14)
@@ -385,9 +427,17 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
     plt.clf()
 
 def general_calculation(pdb_file, name_chain, out):
-    # read PDB file
+    """Calls the functions necessary to obtain the flexibility score.
+    
+    Based on the mehod indicated in the PDB file to obtain the structure,
+    it chooses the method that must be used to calculate the flexbility score.
+    """
+    
+    # Read PDB file
     pdb = PDB(pdb_file)
     f = open(pdb_file, 'r')
+    
+    # Define a variable storing the experimental method used to obtain the structure
     TYPE = ""
     for line in f.readlines():
         if line.startswith('EXPDTA'):
