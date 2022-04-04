@@ -78,6 +78,56 @@ def download_AlphaFold(query, swissprot_id, path):
         return False
 
 
+def download_uniprot_xml(Uniprot_id, path):
+    """
+    Download UniProtKB from Uniprot ID in XML format. It returns a XML file
+    ([identifier]_uniprot.xml) in the path directory.
+    """
+    url = "https://www.uniprot.org/uniprot/" + Uniprot_id + ".xml"
+    if check_url(url):
+        uniprot = requests.get(url)
+        fo = open(path + Uniprot_id+'_uniprot.xml', 'w')
+        for line in uniprot:
+            fo.write(line.decode("utf-8"))
+        fo.close()
+    else:
+        return False
+
+
+def parse_uniprot_xml(uniprot_XML):
+    """
+    parse_uniprot_xml is a function which returns in a list of tuples which contains
+    the pdb id,the start and end residue position from a Uniprot data base from a
+    uniprot XML file
+    """
+    list = []
+    fd = open(uniprot_XML, 'r')
+    match = False
+    for line in fd:
+        if re.search('<dbReference type="PDB"', line) != None:
+            print(line)
+            line = line.strip()
+            line = line.rstrip()
+            line = line.strip('<dbReference type="PDB" id="')
+            line = line.rstrip('">')
+            id = line
+            match = True
+        elif match == True and re.search('<property type="chains"', line) != None:
+            line = line.strip()
+            line = line.rstrip()
+            line = line.strip('<property type="chains" value="')
+            line = line.rstrip('">')
+            line = line.split('=')
+            chain = line[0].split('/')[0]
+            pos = line[1].split("-")
+            start = pos[0]
+            end = pos[1].rstrip('"/')
+        elif match == True and re.search('</dbReference>', line) != None:
+            list.append((id, start, end))
+            match = False
+    return list
+
+
 def parse_XML(blast_XML):
     """
     parse_XML is a generator function which use a XML BLASTp results from NCBI
@@ -92,7 +142,6 @@ def parse_XML(blast_XML):
     gaps = []
     for line in blast_XML:
         if re.search('<Hit_id>', line) != None:
-            print(line)
             line = line.strip()
             line = line.rstrip()
             line = line.strip('<Hit_id>')
@@ -193,3 +242,8 @@ class PDB(object):
         self.start = start
         self.end = end
         self.gaps = gaps
+
+
+download_uniprot_xml('P06401', './')
+x = parse_uniprot_xml('P06401_uniprot.xml')
+print(x)
