@@ -9,29 +9,41 @@ import configparser
 def AlphaFold(query, local, database=None):
     if local == False:
         BLAST = request.BLAST_sp(query)
+        for seq in request.parse_XML(BLAST):
+            if request.download_AlphaFold(query, seq[0].split('|')[1], './files/PDB/') == False:
+                continue
+            else:
+                return request.PDB(
+                    query.identifier, seq[0], None, './files/PDB/' + query.identifier + '_AlphaFold.pdb', seq[1], seq[2], seq[3], seq[4])
     else:
         BLAST = request.BLAST_commandline(query, database)
         BLAST = BLAST[0].split('\n|\r')
-    for seq in request.parse_blast(BLAST):
-        if request.download_AlphaFold(query, seq[0].split('|')[1], './files/PDB/') == False:
-            continue
-        else:
-            return request.PDB(
-                query.identifier, seq[0], None, './files/PDB/' + query.identifier + '_AlphaFold.pdb', seq[1], seq[2], seq[3], seq[4])
+        for seq in request.parse_blast(BLAST):
+            if request.download_AlphaFold(query, seq[0].split('|')[1], './files/PDB/') == False:
+                continue
+            else:
+                return request.PDB(
+                    query.identifier, seq[0], None, './files/PDB/' + query.identifier + '_AlphaFold.pdb', seq[1], seq[2], seq[3], seq[4])
 
 
 def PDB(query, local, database=None):
     if local == False:
         BLAST = request.BLAST_PDB(query)
+        for seq in request.parse_XML(BLAST):
+            if request.download_PDB(query, seq[0][0:4], './files/PDB/') == False:
+                continue
+            else:
+                return request.PDB(
+                    query.identifier, seq[0], seq[0][5:], './files/PDB/' + query.identifier + '.pdb', seq[1], seq[2], seq[3], seq[4])
     else:
         BLAST = request.BLAST_commandline(query, database)
         BLAST = BLAST[0].split('\n|\r')
-    for seq in request.parse_blast(BLAST):
-        if request.download_PDB(query, seq[0][0:4], './files/PDB/') == False:
-            continue
-        else:
-            return request.PDB(
-                query.identifier, seq[0], seq[0][5:], './files/PDB/' + query.identifier + '.pdb', seq[1], seq[2], seq[3], seq[4])
+        for seq in request.parse_blast(BLAST):
+            if request.download_PDB(query, seq[0][0:4], './files/PDB/') == False:
+                continue
+            else:
+                return request.PDB(
+                    query.identifier, seq[0], seq[0][5:], './files/PDB/' + query.identifier + '.pdb', seq[1], seq[2], seq[3], seq[4])
 
 
 parser = argparse.ArgumentParser(
@@ -77,15 +89,7 @@ if config['blast']['local'] == False:
 else:
     for i in range(0, len(fasta_list)):
         print(
-            f"Searching similar sequences to {fasta_list[i].identifier} in PDB and SwissProt databases using BLASTp...")
-        try:
-            PDB_list.append(
-                PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
-            print(
-                f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
-        except IndexError:
-            PDB_list.append(None)
-            print(f"No PDB match was found")
+            f"Searching similar sequences to {fasta_list[i].identifier} in SwissProt databases using BLASTp...")
         try:
             AlphaFold_list.append(
                 AlphaFold(fasta_list[i], True, config['blast']['SwissProtdb_path']))
@@ -94,22 +98,38 @@ else:
         except IndexError:
             AlphaFold_list.append(None)
             print(f"No PDB match was found")
+        if AlphaFold_list[i].identity > 0.95:
+            request.download_uniprot_xml(AlphaFold_list[i].identity, './')
+            pdb_list = request.parse_uniprot_xml(
+                AlphaFold_list[i].identity + '_uniprot.xml')
+            print(pdb_list)
+        try:
+            PDB_list.append(
+                PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
+            print(
+                f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
+        except IndexError:
+            PDB_list.append(None)
+            print(f"No PDB match was found")
+
 
 def retrieving_score(pdb_prefix, chain_id):
     print(
         f"Computing flexibility score on {pdb_prefix}...")
-    calculus.general_calculation('./files/PDB/'+pdb_prefix+'.pdb', chain_id, './files/flex_scores/'+pdb_prefix+'.out')
+    calculus.general_calculation(
+        './files/PDB/'+pdb_prefix+'.pdb', chain_id, './files/flex_scores/'+pdb_prefix+'.out')
+
 
 for i in range(0, len(fasta_list)):
-    if AlphaFold_list[i]!=None and PDB_list[i]!=None:
+    if AlphaFold_list[i] != None and PDB_list[i] != None:
         if AlphaFold_list[i].identity > PDB_list[i].identity:
             retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
         else:
-            retrieving_score(fasta_list[i].identifier, PDB_list[i].identifier[-1])
-    elif AlphaFold_list[i]!=None and PDB_list[i]==None:
+            retrieving_score(fasta_list[i].identifier,
+                             PDB_list[i].identifier[-1])
+    elif AlphaFold_list[i] != None and PDB_list[i] == None:
         retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
-    elif AlphaFold_list[i]==None and PDB_list[i]!=None:
+    elif AlphaFold_list[i] == None and PDB_list[i] != None:
         retrieving_score(fasta_list[i].identifier, PDB_list[i].identifier[-1])
     else:
         print("No PDB files were obtained. Flexibility cannot be calculated")
-
