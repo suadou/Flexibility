@@ -137,7 +137,7 @@ for i in range(0, len(fasta_list)):
             calculus.general_calculation_multiple(
                 PDB_list[i], AlphaFold_list[i])
 
-        if AlphaFold_list[i].identity > PDB_list[i].identity:
+        elif AlphaFold_list[i].identity > PDB_list[i].identity:
             retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
         else:
             retrieving_score(fasta_list[i].identifier,
