@@ -40,7 +40,7 @@ def download_PDB(query, pdb_id, path):
         pdb_id + ".pdb"
     if check_url(url):
         blast = requests.get(url)
-        fo = open(path + query.identifier+'.pdb', 'w')
+        fo = open(path + pdb_id + '_' + query.identifier+'.pdb', 'w')
         for line in blast:
             fo.write(line.decode("utf-8"))
         fo.close()
