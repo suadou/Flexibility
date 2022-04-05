@@ -483,17 +483,18 @@ def general_calculation_multiple(pdb_list, alphafold):
     it chooses the method that must be used to calculate the flexbility score.
     """
 
-    flexibility_array = np.full([len(pdb_list)+2, alphafold.end+1], None)
+    flexibility_array = np.full([len(pdb_list)+2, int(alphafold.end)+1], None)
     j = 0
-    for pdb in pdb_list:
+    for element in pdb_list:
+        start_res = float('inf')
+        end_res = 0
         # Read PDB file
-        pdb = pdb.path
+        pdb = PDB(element.path)
 
         # Extract only backbone atoms
         atoms = pdb.get_atoms()
         allowed_names = ['C', 'CA', 'N', 'O']
         backbone_atoms = [atom for atom in atoms if atom.name in allowed_names]
-
         # Calculate RMSF of all backbone atoms
         RMSF_list = rmsf_Bfactor(backbone_atoms)
 
@@ -502,14 +503,16 @@ def general_calculation_multiple(pdb_list, alphafold):
 
         # Choose the adequate chain based on the matching PDB
         for atom in atoms:
-            if (atom.chainID == pdb.chain) and (counter == 0):
+            if (atom.chainID == element.chain) and (counter == 0):
                 current_resid = atom.resSeq
                 residue_list = [backbone_atoms[0]]
                 counter = 1
+            start_res = min(int(atom.resSeq), start_res)
+            end_res = max(int(atom.resSeq), end_res)
 
         # Get a list of mean RMSFs for each residue
         for atom, rmsf in zip(backbone_atoms, RMSF_list):
-            if atom.chainID == pdb.chain:
+            if atom.chainID == element.chain:
                 if atom.resSeq != current_resid:
                     means.append(sum(current_rmsfs) / len(current_rmsfs))
                     residue_list.append(atom)
@@ -525,7 +528,7 @@ def general_calculation_multiple(pdb_list, alphafold):
         number_of_residue = []
         for atom, rmsf in zip(backbone_atoms, RMSF_list):
             values = [atom[key] for key in keys]
-            if values[1] == pdb.chain:
+            if values[1] == element.chain:
                 flexibility.append(rmsf)
                 number_of_residue.append(values[2])
 
@@ -533,10 +536,10 @@ def general_calculation_multiple(pdb_list, alphafold):
         new_flexibility = []
         for atom, rmsf in zip(backbone_atoms, RMSF_list):
             values = [atom[key] for key in keys]
-            if values[1] == pdb.chain:
+            if values[1] == element.chain:
                 rmsf = (rmsf - min(flexibility)) / \
                         (max(flexibility)-min(flexibility))
                 new_flexibility.append(rmsf)
-        flexibility_array[j][0] = pdb.identifier
-        flexibility_array[j][pdb.start:pdb.end] = new_flexibility
-    np.savetxt(prueba, flexibility_array, delimiter="\t")
+        flexibility_array[j][0] = element.identifier
+        flexibility_array[j][start_res:end_res] = new_flexibility
+    np.savetxt('./prueba.txt', flexibility_array, delimiter=",")
