@@ -97,20 +97,28 @@ else:
                 f"AlphaFold match: {AlphaFold_list[i].identifier} ({AlphaFold_list[i].identity:.2f})")
         except IndexError:
             AlphaFold_list.append(None)
-            print(f"No PDB match was found")
+            print("No PDB match was found")
         if AlphaFold_list[i].identity > 0.95:
+            print(
+                f"The model fits with {AlphaFold_list[i].identity} {AlphaFold_list[i].identity} of identity")
             request.download_uniprot_xml(AlphaFold_list[i].identity, './')
             pdb_list = request.parse_uniprot_xml(
                 AlphaFold_list[i].identity + '_uniprot.xml')
-            print(pdb_list)
-        try:
-            PDB_list.append(
-                PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
-            print(
-                f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
-        except IndexError:
-            PDB_list.append(None)
-            print(f"No PDB match was found")
+            for pdb in pdb_list:
+                print(f"Downloading {pdb[0]} from PDB server")
+                if request.download_PDB(fasta_list[i], pdb[0], './') == False:
+                    continue
+                else:
+                     PDB_list[i].append(request.PDB(fasta_list[i].identifier, pdb[0], pdb[1], './' + query.identifier + '.pdb', 1, pdb[2], pdb[3], [])
+        else:
+            try:
+                PDB_list.append(
+                    PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
+                print(
+                    f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
+            except IndexError:
+                PDB_list.append(None)
+                print(f"No PDB match was found")
 
 
 def retrieving_score(pdb_prefix, chain_id):
@@ -122,14 +130,20 @@ def retrieving_score(pdb_prefix, chain_id):
 
 for i in range(0, len(fasta_list)):
     if AlphaFold_list[i] != None and PDB_list[i] != None:
+        if AlphaFold_list[i].identity > 0.95:
+            retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
+            for j in range(0, len(PDB_list[i])):
+                retrieving_score(fasta_list[i].identifier,
+                                 PDB_list[i][j].chain)
+
         if AlphaFold_list[i].identity > PDB_list[i].identity:
             retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
         else:
             retrieving_score(fasta_list[i].identifier,
-                             PDB_list[i].identifier[-1])
+                             PDB_list[i].chain)
     elif AlphaFold_list[i] != None and PDB_list[i] == None:
         retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
     elif AlphaFold_list[i] == None and PDB_list[i] != None:
-        retrieving_score(fasta_list[i].identifier, PDB_list[i].identifier[-1])
+        retrieving_score(fasta_list[i].identifier, PDB_list[i].chain)
     else:
         print("No PDB files were obtained. Flexibility cannot be calculated")
