@@ -123,7 +123,7 @@ def parse_uniprot_xml(uniprot_XML):
             start = pos[0]
             end = pos[1].rstrip('"/')
         elif match == True and re.search('</dbReference>', line) != None:
-            list.append((id, start, end))
+            list.append((id, chain, start, end))
             match = False
     return list
 
@@ -242,8 +242,3 @@ class PDB(object):
         self.start = start
         self.end = end
         self.gaps = gaps
-
-
-download_uniprot_xml('P06401', './')
-x = parse_uniprot_xml('P06401_uniprot.xml')
-print(x)
