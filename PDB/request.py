@@ -105,7 +105,6 @@ def parse_uniprot_xml(uniprot_XML):
     match = False
     for line in fd:
         if re.search('<dbReference type="PDB"', line) != None:
-            print(line)
             line = line.strip()
             line = line.rstrip()
             line = line.strip('<dbReference type="PDB" id="')
