@@ -64,10 +64,10 @@ config.read('config.ini')
 print(f"Reading {options.input_file} file.")
 fasta_list = read.FASTA_parser(options.input_file)
 print(f"{len(fasta_list)} record/s was/were read.")
-PDB_list = []
+PDB_list = [[]]
 AlphaFold_list = []
 # Threading for API BLASTp search
-if config['blast']['local'] == False:
+if config['blast']['local'] == 'False':
     threads = len(fasta_list)
     jobs = []
     for i in range(0, threads):
@@ -94,22 +94,22 @@ else:
             AlphaFold_list.append(
                 AlphaFold(fasta_list[i], True, config['blast']['SwissProtdb_path']))
             print(
-                f"AlphaFold match: {AlphaFold_list[i].identifier} ({AlphaFold_list[i].identity:.2f})")
+                f"AlphaFold match: {AlphaFold_list[i].identifier.split('|')[1]} ({AlphaFold_list[i].identity:.2f})")
         except IndexError:
             AlphaFold_list.append(None)
             print("No PDB match was found")
         if AlphaFold_list[i].identity > 0.95:
             print(
-                f"The model fits with {AlphaFold_list[i].identity} {AlphaFold_list[i].identity} of identity")
-            request.download_uniprot_xml(AlphaFold_list[i].identity, './')
+                f"The model fits with {AlphaFold_list[i].identifier.split('|')[1]} {AlphaFold_list[i].identity} of identity")
+            request.download_uniprot_xml(AlphaFold_list[i].identifier.split('|')[1], './')
             pdb_list = request.parse_uniprot_xml(
-                AlphaFold_list[i].identity + '_uniprot.xml')
+                AlphaFold_list[i].identifier.split('|')[1] + '_uniprot.xml')
             for pdb in pdb_list:
                 print(f"Downloading {pdb[0]} from PDB server")
                 if request.download_PDB(fasta_list[i], pdb[0], './') == False:
                     continue
                 else:
-                     PDB_list[i].append(request.PDB(fasta_list[i].identifier, pdb[0], pdb[1], './' + query.identifier + '.pdb', 1, pdb[2], pdb[3], [])
+                     PDB_list[i].append(request.PDB(fasta_list[i].identifier, pdb[0], pdb[1], './' + pdb[0] + '_' +fasta_list[i].identifier + '.pdb', 1, pdb[2], pdb[3], []))
         else:
             try:
                 PDB_list.append(
