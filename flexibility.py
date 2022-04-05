@@ -101,7 +101,8 @@ else:
         if AlphaFold_list[i].identity > 0.95:
             print(
                 f"The model fits with {AlphaFold_list[i].identifier.split('|')[1]} {AlphaFold_list[i].identity} of identity")
-            request.download_uniprot_xml(AlphaFold_list[i].identifier.split('|')[1], './')
+            request.download_uniprot_xml(
+                AlphaFold_list[i].identifier.split('|')[1], './')
             pdb_list = request.parse_uniprot_xml(
                 AlphaFold_list[i].identifier.split('|')[1] + '_uniprot.xml')
             for pdb in pdb_list:
@@ -109,7 +110,8 @@ else:
                 if request.download_PDB(fasta_list[i], pdb[0], './') == False:
                     continue
                 else:
-                     PDB_list[i].append(request.PDB(fasta_list[i].identifier, pdb[0], pdb[1], './' + pdb[0] + '_' +fasta_list[i].identifier + '.pdb', 1, pdb[2], pdb[3], []))
+                    PDB_list[i].append(request.PDB(fasta_list[i].identifier, pdb[0], pdb[1], './'
+                                                   + pdb[0] + '_' + fasta_list[i].identifier + '.pdb', 1, pdb[2], pdb[3], []))
         else:
             try:
                 PDB_list.append(
@@ -132,9 +134,8 @@ for i in range(0, len(fasta_list)):
     if AlphaFold_list[i] != None and PDB_list[i] != None:
         if AlphaFold_list[i].identity > 0.95:
             retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
-            for j in range(0, len(PDB_list[i])):
-                retrieving_score(fasta_list[i].identifier,
-                                 PDB_list[i][j].chain)
+            calculus.general_calculation_multiple(
+                PDB_list[i], AlphaFold_list[i])
 
         if AlphaFold_list[i].identity > PDB_list[i].identity:
             retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
