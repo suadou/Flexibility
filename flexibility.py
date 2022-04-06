@@ -100,18 +100,31 @@ else:
             print("No PDB match was found")
         if AlphaFold_list[i].identity > 0.95:
             print(
-                f"The model fits with {AlphaFold_list[i].identifier.split('|')[1]} {AlphaFold_list[i].identity} of identity")
+                f"The model fits with {AlphaFold_list[i].identifier.split('|')[1]} with {AlphaFold_list[i].identity} of identity \nSearching PDB files linked to the UniProt code")
             request.download_uniprot_xml(
                 AlphaFold_list[i].identifier.split('|')[1], './')
             pdb_list = request.parse_uniprot_xml(
                 AlphaFold_list[i].identifier.split('|')[1] + '_uniprot.xml')
-            for pdb in pdb_list:
-                print(f"Downloading {pdb[0]} from PDB server")
-                if request.download_PDB(fasta_list[i], pdb[0], './') == False:
-                    continue
-                else:
-                    PDB_list[i].append(request.PDB(fasta_list[i].identifier, pdb[0], pdb[1], './'
-                                                   + pdb[0] + '_' + fasta_list[i].identifier + '.pdb', 1, pdb[2], pdb[3], []))
+            if pdb_list:
+                print(f'{len(pdb_list} found)')
+                for pdb in pdb_list:
+                    print(f"Downloading {pdb[0]} from PDB server")
+                    if request.download_PDB(fasta_list[i], pdb[0], './') == False:
+                        print("Cannot download {fasta_list[i]} PDB file. It was omitted")
+                        continue
+                    else:
+                        PDB_list[i].append(request.PDB(fasta_list[i].identifier, pdb[0], pdb[1], './'
+                                                    + pdb[0] + '_' + fasta_list[i].identifier + '.pdb', 1, pdb[2], pdb[3], []))
+                        print("Done")
+            else:
+                try:
+                    PDB_list.append(
+                        PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
+                    print(
+                        f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
+                except IndexError:
+                    PDB_list.append(None)
+                    print(f"No PDB match was found")    
         else:
             try:
                 PDB_list.append(
@@ -132,7 +145,7 @@ def retrieving_score(pdb_prefix, chain_id):
 
 for i in range(0, len(fasta_list)):
     if AlphaFold_list[i] != None and PDB_list[i] != None:
-        if AlphaFold_list[i].identity > 0.95:
+        if AlphaFold_list[i].identity > 0.95 and pdb_list:
             retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
             calculus.general_calculation_multiple(
                 PDB_list[i], AlphaFold_list[i])
