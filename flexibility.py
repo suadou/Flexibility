@@ -97,7 +97,7 @@ else:
                 f"AlphaFold match: {AlphaFold_list[i].identifier.split('|')[1]} ({AlphaFold_list[i].identity:.2f})")
         except IndexError:
             AlphaFold_list.append(None)
-            print("No PDB match was found")
+            print("No AlphaFold match was found")
         if AlphaFold_list[i].identity > 0.95:
             print(
                 f"The model fits with {AlphaFold_list[i].identifier.split('|')[1]} with {AlphaFold_list[i].identity} of identity \nSearching PDB files linked to the UniProt code")
@@ -106,7 +106,7 @@ else:
             pdb_list = request.parse_uniprot_xml(
                 AlphaFold_list[i].identifier.split('|')[1] + '_uniprot.xml')
             if pdb_list:
-                print(f'{len(pdb_list} found)')
+                print(f'{len(pdb_list)} PDB files found')
                 for pdb in pdb_list:
                     print(f"Downloading {pdb[0]} from PDB server")
                     if request.download_PDB(fasta_list[i], pdb[0], './') == False:
@@ -139,8 +139,9 @@ else:
 def retrieving_score(pdb_prefix, chain_id):
     print(
         f"Computing flexibility score on {pdb_prefix}...")
-    calculus.general_calculation(
+    matrix = calculus.general_calculation(
         './files/PDB/'+pdb_prefix+'.pdb', chain_id, './files/flex_scores/'+pdb_prefix+'.out')
+    return matrix
 
 
 for i in range(0, len(fasta_list)):
