@@ -486,8 +486,6 @@ def general_calculation_multiple(pdb_list, alphafold):
     flexibility_array = np.full([len(pdb_list)+2, int(alphafold.end)+1], None)
     j = 0
     for element in pdb_list:
-        start_res = float('inf')
-        end_res = 0
         # Read PDB file
         pdb = PDB(element.path)
 
@@ -507,8 +505,7 @@ def general_calculation_multiple(pdb_list, alphafold):
                 current_resid = atom.resSeq
                 residue_list = [backbone_atoms[0]]
                 counter = 1
-            start_res = min(int(atom.resSeq), start_res)
-            end_res = max(int(atom.resSeq), end_res)
+
 
         # Get a list of mean RMSFs for each residue
         for atom, rmsf in zip(backbone_atoms, RMSF_list):
@@ -531,15 +528,24 @@ def general_calculation_multiple(pdb_list, alphafold):
             if values[1] == element.chain:
                 flexibility.append(rmsf)
                 number_of_residue.append(values[2])
-
         # Normalise the flexibility scores of the array
-        new_flexibility = []
         for atom, rmsf in zip(backbone_atoms, RMSF_list):
             values = [atom[key] for key in keys]
             if values[1] == element.chain:
                 rmsf = (rmsf - min(flexibility)) / \
                         (max(flexibility)-min(flexibility))
-                new_flexibility.append(rmsf)
+                flexibility_array[j][atom.resSeq] = rmsf
         flexibility_array[j][0] = element.identifier
-        flexibility_array[j][start_res:end_res] = new_flexibility
-    np.savetxt('./prueba.txt', flexibility_array, delimiter=",")
+        j = j + 1
+    flexibility_array[-2][0] = 'Mean'
+    flexibility_array[-1][0] = 'std'
+    for k in range(1,int(alphafold.end)+1):
+        column = flexibility_array[:-2, k]
+        column = list(filter(None, column))
+        if column:
+            flexibility_array[-2][k] = np.mean(column)
+            flexibility_array[-1][k] = np.std(column)
+        else:
+            flexibility_array[-2][k] = None
+            flexibility_array[-1][k] = None           
+    np.savetxt('./prueba.txt', flexibility_array, delimiter="\t", fmt="%s")
