@@ -42,6 +42,7 @@ class PDB:
     def __init__(self, file):
         self.file = file
         self.atoms = []
+        self.type = None
         self.parse()
 
     def parse(self):
@@ -51,6 +52,8 @@ class PDB:
         for line in f.readlines():
             if line.startswith('MODEL'):
                 MODEL = int(line.split()[1])
+            if line.startswith('EXPDTA'):
+                self.type = str(line.split()[1])      
             if line.startswith('ATOM'):
                 atom = Atom(line)
                 atom.MODEL = MODEL
@@ -270,15 +273,6 @@ def calculation_from_NMR(pdb_file, name_chain, out):
             scores.write("\n")
     scores.close()
 
-    # Generate the graphical representation of flexibility scores
-    plt.plot(number_of_residue, new_flexibility, color='red', marker='o')
-    plt.title('RMSF Vs Residue number', fontsize=14)
-    plt.xlabel('Residue number', fontsize=14)
-    plt.ylabel('Normalised RMSF', fontsize=14)
-    plt.grid(True)
-    plt.savefig(out+".png")
-    plt.clf()
-
 
 def rmsf_Bfactor(atoms):
     """Returns a list of root-mean square fluctuations (RMSF) for each atom in the PDB."""
@@ -293,7 +287,7 @@ def rmsf_Bfactor(atoms):
     return RMSFs
 
 
-def calculation_from_crystal(pdb_file, name_chain, out):
+def calculation_from_crystal(pdb_file, name_chain):
     """
     Calculate RMSF of each residue in a PDB file of a protein obtained by X-ray.
 
@@ -330,14 +324,14 @@ def calculation_from_crystal(pdb_file, name_chain, out):
                 current_rmsfs = []
                 current_resid = atom.resSeq
             current_rmsfs.append(rmsf)
+    means.append(sum(current_rmsfs) / len(current_rmsfs))
     RMSF_list = means
     backbone_atoms = residue_list
     keys = ['resName', 'chainID', 'resSeq']
-    scores = open(out, 'w')
+    scores = []
 
     # Write the header of the output file
-    scores.write("ResName\tChain\tResID\tRMSF\n")
-    template = '{:>3s} {:>2s} {:>3d}  {:<f}'
+    scores.append(["ResName", "Chain", "ResID", "RMSF"])
 
     # Generate an array with flexibility scores
     flexibility = []
@@ -357,18 +351,8 @@ def calculation_from_crystal(pdb_file, name_chain, out):
                     (max(flexibility)-min(flexibility))
             new_flexibility.append(rmsf)
             values.append(rmsf)
-            scores.write(template.format(*values))
-            scores.write("\n")
-    scores.close()
-
-    # Generate the graphical representation of flexibility scores
-    plt.plot(number_of_residue, new_flexibility, color='red', marker='o')
-    plt.title('RMSF Vs Residue number', fontsize=14)
-    plt.xlabel('Residue number', fontsize=14)
-    plt.ylabel('Normalised RMSF', fontsize=14)
-    plt.grid(True)
-    plt.savefig(out+".png")
-    plt.clf()
+            scores.append(values)
+    return scores
 
 
 def rmsf_pLLDT(atoms):
@@ -376,11 +360,9 @@ def rmsf_pLLDT(atoms):
 
     # Extrac the pLLDT value of each atom in the PDB file
     atom_pLLDT = [atom.tempFactor for atom in atoms]
-
     # Obtain the RMSF of each atom, with respect to the set
     def calc_rmsf(p): return log10(100-p)
     RMSFs = map(calc_rmsf, atom_pLLDT)
-
     return RMSFs
 
 
@@ -404,7 +386,6 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
     means, current_rmsfs = [], []
     current_resid = backbone_atoms[0].resSeq
     residue_list = [backbone_atoms[0]]
-
     # Get a list of mean RMSFs for each residue
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         if atom.resSeq != current_resid:
@@ -413,14 +394,14 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
             current_rmsfs = []
             current_resid = atom.resSeq
         current_rmsfs.append(rmsf)
+    means.append(sum(current_rmsfs) / len(current_rmsfs))
     RMSF_list = means
     backbone_atoms = residue_list
     keys = ['resName', 'chainID', 'resSeq']
-    scores = open(out, 'w')
+    scores = []
 
     # Write the header of the output file
-    scores.write("ResName\tChain\tResID\tRMSF\n")
-    template = '{:>3s} {:>2s} {:>3d}  {:<f}'
+    scores.append(["ResName", "Chain", "ResID", "RMSF"])
 
     # Generate an array with flexibility scores
     flexibility = []
@@ -436,19 +417,8 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
         values = [atom[key] for key in keys]
         rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
         values.append(rmsf)
-        new_flexibility.append(rmsf)
-        scores.write(template.format(*values))
-        scores.write("\n")
-    scores.close()
-
-    # Generate the graphical representation of flexibility scores
-    plt.plot(number_of_residue, new_flexibility, color='red', marker='o')
-    plt.title('RMSF Vs Residue number', fontsize=14)
-    plt.xlabel('Residue number', fontsize=14)
-    plt.ylabel('Normalised RMSF)', fontsize=14)
-    plt.grid(True)
-    plt.savefig(out+".png")
-    plt.clf()
+        scores.append(values)
+    return scores
 
 
 def general_calculation(pdb_file, name_chain, out):
@@ -457,22 +427,15 @@ def general_calculation(pdb_file, name_chain, out):
     Based on the mehod indicated in the PDB file to obtain the structure,
     it chooses the method that must be used to calculate the flexbility score.
     """
-
     # Read PDB file
     pdb = PDB(pdb_file)
-    f = open(pdb_file, 'r')
-
-    # Define a variable storing the experimental method used to obtain the structure
-    TYPE = ""
-    for line in f.readlines():
-        if line.startswith('EXPDTA'):
-            TYPE = str(line.split()[1])
-    if TYPE == "X-RAY":
-        calculation_from_crystal(pdb_file, name_chain, out)
-    elif TYPE == "SOLUTION":
-        calculation_from_NMR(pdb_file, name_chain, out)
+    if pdb.type == "X-RAY":
+        matrix = calculation_from_crystal(pdb_file, name_chain, out)
+    elif pdb.type == "SOLUTION":
+        matrix = calculation_from_NMR(pdb_file, name_chain, out)
     else:
-        calculation_from_alphafold(pdb_file, name_chain, out)
+        matrix = calculation_from_alphafold(pdb_file, name_chain, out)
+    return matrix
 
 
 def general_calculation_multiple(pdb_list, alphafold):
@@ -486,56 +449,12 @@ def general_calculation_multiple(pdb_list, alphafold):
     flexibility_array = np.full([len(pdb_list)+2, int(alphafold.end)+1], None)
     j = 0
     for element in pdb_list:
-        # Read PDB file
-        pdb = PDB(element.path)
-
-        # Extract only backbone atoms
-        atoms = pdb.get_atoms()
-        allowed_names = ['C', 'CA', 'N', 'O']
-        backbone_atoms = [atom for atom in atoms if atom.name in allowed_names]
-        # Calculate RMSF of all backbone atoms
-        RMSF_list = rmsf_Bfactor(backbone_atoms)
-
-        means, current_rmsfs = [], []
-        counter = 0
-
-        # Choose the adequate chain based on the matching PDB
-        for atom in atoms:
-            if (atom.chainID == element.chain) and (counter == 0):
-                current_resid = atom.resSeq
-                residue_list = [backbone_atoms[0]]
-                counter = 1
-
-
-        # Get a list of mean RMSFs for each residue
-        for atom, rmsf in zip(backbone_atoms, RMSF_list):
-            if atom.chainID == element.chain:
-                if atom.resSeq != current_resid:
-                    means.append(sum(current_rmsfs) / len(current_rmsfs))
-                    residue_list.append(atom)
-                    current_rmsfs = []
-                    current_resid = atom.resSeq
-                current_rmsfs.append(rmsf)
-        RMSF_list = means
-        backbone_atoms = residue_list
-        keys = ['resName', 'chainID', 'resSeq']
-
-        # Generate an array with flexibility scores
-        flexibility = []
-        number_of_residue = []
-        for atom, rmsf in zip(backbone_atoms, RMSF_list):
-            values = [atom[key] for key in keys]
-            if values[1] == element.chain:
-                flexibility.append(rmsf)
-                number_of_residue.append(values[2])
-        # Normalise the flexibility scores of the array
-        for atom, rmsf in zip(backbone_atoms, RMSF_list):
-            values = [atom[key] for key in keys]
-            if values[1] == element.chain:
-                rmsf = (rmsf - min(flexibility)) / \
-                        (max(flexibility)-min(flexibility))
-                flexibility_array[j][atom.resSeq] = rmsf
-        flexibility_array[j][0] = element.identifier
+        print(f"Computing flexibility score on {element.identifier}...")
+        matrix = calculation_from_crystal(element.path, element.chain)
+        print("Done")
+        flexibility_array[j][0]=element.identifier
+        for i in range(1, len(matrix)-1):
+            flexibility_array[j][matrix[i][2]] = matrix[i][3]
         j = j + 1
     flexibility_array[-2][0] = 'Mean'
     flexibility_array[-1][0] = 'std'
@@ -547,5 +466,18 @@ def general_calculation_multiple(pdb_list, alphafold):
             flexibility_array[-1][k] = np.std(column)
         else:
             flexibility_array[-2][k] = None
-            flexibility_array[-1][k] = None           
-    np.savetxt('./prueba.txt', flexibility_array, delimiter="\t", fmt="%s")
+            flexibility_array[-1][k] = None        
+    return flexibility_array
+
+def represent_data(matrix, path, pdb_matrix_alphafold = []):
+    if len(pdb_matrix_alphafold) > 0:
+        matrix = np.concatenate((np.asarray(matrix, dtype = "str").transpose(), pdb_matrix_alphafold)).transpose()
+        plt.plot(matrix.transpose()[2][1:], matrix.transpose()[3][1:], color='red', marker='o')
+        plt.title('RMSF Vs Residue number', fontsize=14)
+        plt.xlabel('Residue number', fontsize=14)
+        plt.ylabel('Normalised RMSF', fontsize=14)
+        plt.grid(True)
+        plt.savefig("aaaaa.png")
+        plt.clf()
+        print(matrix.transpose()[2][1:], matrix.transpose()[3][1:])    
+    np.savetxt(path + 'prueba2.txt', matrix, fmt="%s" , delimiter="\t")
