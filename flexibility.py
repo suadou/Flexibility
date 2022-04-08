@@ -108,7 +108,7 @@ else:
             if pdb_list:
                 print(f'{len(pdb_list)} PDB files found')
                 for pdb in pdb_list:
-                    print(f"Downloading {pdb[0]} from PDB server")
+                    print(f"Downloading {pdb[0]} from PDB server...")
                     if request.download_PDB(fasta_list[i], pdb[0], './') == False:
                         print("Cannot download {fasta_list[i]} PDB file. It was omitted")
                         continue
@@ -141,24 +141,30 @@ def retrieving_score(pdb_prefix, chain_id):
         f"Computing flexibility score on {pdb_prefix}...")
     matrix = calculus.general_calculation(
         './files/PDB/'+pdb_prefix+'.pdb', chain_id, './files/flex_scores/'+pdb_prefix+'.out')
+    print("Done")
     return matrix
 
 
 for i in range(0, len(fasta_list)):
+    plot = True
     if AlphaFold_list[i] != None and PDB_list[i] != None:
         if AlphaFold_list[i].identity > 0.95 and pdb_list:
-            retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
-            calculus.general_calculation_multiple(
+            matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
+            matrix_pdb = calculus.general_calculation_multiple(
                 PDB_list[i], AlphaFold_list[i])
-
         elif AlphaFold_list[i].identity > PDB_list[i].identity:
-            retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
+            matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
         else:
-            retrieving_score(fasta_list[i].identifier,
+            matrix = retrieving_score(fasta_list[i].identifier,
                              PDB_list[i].chain)
     elif AlphaFold_list[i] != None and PDB_list[i] == None:
-        retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
+        matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
     elif AlphaFold_list[i] == None and PDB_list[i] != None:
-        retrieving_score(fasta_list[i].identifier, PDB_list[i].chain)
+        matrix = retrieving_score(fasta_list[i].identifier, PDB_list[i].chain)
     else:
         print("No PDB files were obtained. Flexibility cannot be calculated")
+        plot = False
+    if plot:
+        print("Saving data and plot...")
+        calculus.represent_data(matrix, "./", matrix_pdb)
+        print("Done")
