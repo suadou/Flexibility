@@ -136,11 +136,11 @@ else:
                 print(f"No PDB match was found")
 
 
-def retrieving_score(pdb_prefix, chain_id):
+def retrieving_score(pdb_prefix, chain_id=None):
     print(
         f"Computing flexibility score on {pdb_prefix}...")
     matrix = calculus.general_calculation(
-        './files/PDB/'+pdb_prefix+'.pdb', chain_id, './files/flex_scores/'+pdb_prefix+'.out')
+        './files/PDB/'+pdb_prefix+'.pdb', chain_id)
     print("Done")
     return matrix
 
@@ -149,16 +149,16 @@ for i in range(0, len(fasta_list)):
     plot = True
     if AlphaFold_list[i] != None and PDB_list[i] != None:
         if AlphaFold_list[i].identity > 0.95 and pdb_list:
-            matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
+            matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold")
             matrix_pdb = calculus.general_calculation_multiple(
                 PDB_list[i], AlphaFold_list[i])
         elif AlphaFold_list[i].identity > PDB_list[i].identity:
-            matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
+            matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold")
         else:
             matrix = retrieving_score(fasta_list[i].identifier,
                              PDB_list[i].chain)
     elif AlphaFold_list[i] != None and PDB_list[i] == None:
-        matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold", "")
+        matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold")
     elif AlphaFold_list[i] == None and PDB_list[i] != None:
         matrix = retrieving_score(fasta_list[i].identifier, PDB_list[i].chain)
     else:
