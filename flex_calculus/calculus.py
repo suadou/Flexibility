@@ -5,6 +5,7 @@ Given a certain PDB file as input, the program identifies its source
 (NMR, X-ray or AlphaFold prediction) and calculates an appropriate flexibility
 score for each residue in described in the file (only considering backbone atoms).
 """
+from cProfile import label
 import copy
 import numpy as np
 from scipy.spatial.distance import squareform
@@ -222,7 +223,7 @@ class NMR(object):
         self.tempFactor = tempFactor
 
 
-def calculation_from_NMR(pdb_file, name_chain, out):
+def calculation_from_NMR(pdb_file, name_chain):
     """
     Calculate RMSF of each residue in a PDB file of a protein obtained by NMR.
 
@@ -240,7 +241,6 @@ def calculation_from_NMR(pdb_file, name_chain, out):
 
     # Get the model number of the centroid structure
     centroid_model = nmr.get_centroid(mean_structure)
-    scores = open(out, 'w')
 
     # Write RMSF by residue to the output file
     RMSF_list = list(nmr.RMSF.items())
@@ -248,9 +248,10 @@ def calculation_from_NMR(pdb_file, name_chain, out):
     # Sort the values by chain and residue number
     RMSF_list.sort()
 
+    scores = []
+
     # Write the header of the output file
-    scores.write("ResName\tChain\tResID\tRMSF\n")
-    template = '{:>3s} {:>2s} {:>3d}  {:<f}'
+    scores.append(["ResName", "Chain", "ResID", "RMSF"])
 
     # Generate an array with flexibility scores
     flexibility = []
@@ -261,17 +262,12 @@ def calculation_from_NMR(pdb_file, name_chain, out):
             number_of_residue.append(resID)
 
     # Normalise the flexibility scores of the array
-    new_flexibility = []
     for (chain, resID, resname), rmsf in RMSF_list:
         if chain == name_chain:
             rmsf = (rmsf - min(flexibility)) / \
                     (max(flexibility)-min(flexibility))
-            new_flexibility.append(rmsf)
-
-            # Write the information on each residue to the output file
-            scores.write(template.format(resname, chain, resID, rmsf))
-            scores.write("\n")
-    scores.close()
+            scores.append([resname, chain, resID, rmsf])
+    return scores
 
 
 def rmsf_Bfactor(atoms):
@@ -366,7 +362,7 @@ def rmsf_pLLDT(atoms):
     return RMSFs
 
 
-def calculation_from_alphafold(pdb_file, name_chain, out):
+def calculation_from_alphafold(pdb_file):
     """
     Calculate RMSF of each residue in a PDB file predicted by AlphaFold.
 
@@ -412,7 +408,6 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
         number_of_residue.append(values[2])
 
     # Normalise the flexibility scores of the array
-    new_flexibility = []
     for atom, rmsf in zip(backbone_atoms, RMSF_list):
         values = [atom[key] for key in keys]
         rmsf = (rmsf - min(flexibility))/(max(flexibility)-min(flexibility))
@@ -421,7 +416,7 @@ def calculation_from_alphafold(pdb_file, name_chain, out):
     return scores
 
 
-def general_calculation(pdb_file, name_chain, out):
+def general_calculation(pdb_file, name_chain = None):
     """Calls the functions necessary to obtain the flexibility score.
 
     Based on the mehod indicated in the PDB file to obtain the structure,
@@ -430,11 +425,11 @@ def general_calculation(pdb_file, name_chain, out):
     # Read PDB file
     pdb = PDB(pdb_file)
     if pdb.type == "X-RAY":
-        matrix = calculation_from_crystal(pdb_file, name_chain, out)
+        matrix = calculation_from_crystal(pdb_file, name_chain)
     elif pdb.type == "SOLUTION":
-        matrix = calculation_from_NMR(pdb_file, name_chain, out)
+        matrix = calculation_from_NMR(pdb_file, name_chain)
     else:
-        matrix = calculation_from_alphafold(pdb_file, name_chain, out)
+        matrix = calculation_from_alphafold(pdb_file)
     return matrix
 
 
@@ -450,7 +445,7 @@ def general_calculation_multiple(pdb_list, alphafold):
     j = 0
     for element in pdb_list:
         print(f"Computing flexibility score on {element.identifier}...")
-        matrix = calculation_from_crystal(element.path, element.chain)
+        matrix = general_calculation(element.path, element.chain)
         print("Done")
         flexibility_array[j][0]=element.identifier
         for i in range(1, len(matrix)-1):
@@ -469,15 +464,20 @@ def general_calculation_multiple(pdb_list, alphafold):
             flexibility_array[-1][k] = None        
     return flexibility_array
 
-def represent_data(matrix, path, pdb_matrix_alphafold = []):
+def represent_data(matrix, out, pdb_matrix_alphafold = []):
     if len(pdb_matrix_alphafold) > 0:
         matrix = np.concatenate((np.asarray(matrix, dtype = "str").transpose(), pdb_matrix_alphafold)).transpose()
-        plt.plot(matrix.transpose()[2][1:], matrix.transpose()[3][1:], color='red', marker='o')
-        plt.title('RMSF Vs Residue number', fontsize=14)
-        plt.xlabel('Residue number', fontsize=14)
-        plt.ylabel('Normalised RMSF', fontsize=14)
-        plt.grid(True)
-        plt.savefig("aaaaa.png")
-        plt.clf()
-        print(matrix.transpose()[2][1:], matrix.transpose()[3][1:])    
-    np.savetxt(path + 'prueba2.txt', matrix, fmt="%s" , delimiter="\t")
+        mask = matrix[0:, -2] != None
+        mask[0] = False
+        plt.errorbar(list(map(float, matrix[mask, 2])), list(map(float, matrix[mask, -2])), yerr=list(map(float, matrix[mask, -1])), color='blue', fmt='.', ecolor = 'lightblue', elinewidth = 1, capsize=2, label='PDBs')
+        plt.scatter(list(map(float, matrix[1:, 2])), list(map(float, matrix[1:, 3])), color='red', marker='.', label = 'AlphaFold')
+        plt.legend(loc='lower left')
+    else:
+        plt.scatter(list(map(float, matrix[1:, 2])), list(map(float, matrix[1:, 3])), color='red', marker='.')
+    plt.title('RMSF Vs Residue number', fontsize=14)
+    plt.xlabel('Residue number', fontsize=14)
+    plt.ylabel('Normalised RMSF', fontsize=14)
+    plt.grid(True)
+    plt.savefig(out + ".png", dpi=600)
+    plt.clf()    
+    np.savetxt(out + '.out', matrix, fmt="%s" , delimiter="\t")
