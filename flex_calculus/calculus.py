@@ -424,7 +424,7 @@ def general_calculation(pdb_file, name_chain = None):
     """
     # Read PDB file
     pdb = PDB(pdb_file)
-    if pdb.type == "X-RAY":
+    if pdb.type == "X-RAY" or pdb.type == "ELECTRON":
         matrix = calculation_from_crystal(pdb_file, name_chain)
     elif pdb.type == "SOLUTION":
         matrix = calculation_from_NMR(pdb_file, name_chain)
