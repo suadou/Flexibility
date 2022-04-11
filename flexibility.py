@@ -10,7 +10,7 @@ def AlphaFold(query, local, database=None):
     if local == False:
         BLAST = request.BLAST_sp(query)
         for seq in request.parse_XML(BLAST):
-            if request.download_AlphaFold(query, seq[0].split('|')[1], './files/PDB/') == False:
+            if request.download_AlphaFold(query, seq[0], './files/PDB/') == False:
                 continue
             else:
                 return request.PDB(
@@ -52,10 +52,8 @@ parser.add_argument('-i', '-in', '--input', dest='input_file', action='store',
                     help='FASTA or Multi-FASTA protein sequence input file', required=True, default=None)
 parser.add_argument('-o', '-out', '--output', dest='output_file', action='store',
                     help='Protein flexibility output file. It will give 2 files ([].txt - Parseable text file) and ([].png - Graphycal representation of flexibility scores)', required=False, default='flexibility_output')
-parser.add_argument('--output_txt', dest='output_txt_file', action='store',
-                    help='Protein flexibility parseable text file output.', required=False, default='flexibility_txt_output')
-parser.add_argument('--output_png', dest='output_png_file', action='store',
-                    help='Protein flexibility graphycal representation file.', required=False, default='flexibility_png_output')
+parser.add_argument('-alpha', '--alpha_threshold', dest='alphafold_threshold', action='store',
+                    help='AlphaFold identity threshold. It set the threshold of AlphaFold identity of the query to use it as the true complete structure. It use the UniProt id to get PDB files.', required=False, default=95)
 options = parser.parse_args()
 args, leftovers = parser.parse_known_args()
 
@@ -74,7 +72,7 @@ if config['blast']['local'] == 'False':
         print(
             f"Searching similar sequences to {fasta_list[i].identifier} in PDB and SwissProt databases using BLASTp server...")
         thread = threading.Thread(
-            target=PDB_list.append(PDB(fasta_list[i], False)))
+            target=PDB_list[i].append(PDB(fasta_list[i], False)))
         jobs.append(thread)
         thread = threading.Thread(target=AlphaFold_list.append(
             AlphaFold(fasta_list[i], False)))
@@ -85,6 +83,30 @@ if config['blast']['local'] == 'False':
 
     for j in jobs:
         j.join()
+    
+    i = 0
+    for element in AlphaFold_list:
+        if element.identity > options.alphafold_threshold:
+            PDB_list[i] = []
+            print(
+                f"The model fits with {AlphaFold_list[i].identifier} with {AlphaFold_list[i].identity} of identity \nSearching PDB files linked to the UniProt code")
+            request.download_uniprot_xml(
+                AlphaFold_list[i].identifier, './')
+            pdb_list = request.parse_uniprot_xml(
+                AlphaFold_list[i].identifier + '_uniprot.xml')
+            if pdb_list:
+                print(f'{len(pdb_list)} PDB files found')
+                for pdb in pdb_list:
+                    print(f"Downloading {pdb[0]} from PDB server...")
+                    if request.download_PDB(fasta_list[i], pdb[0], './') == False:
+                        print("Cannot download {pdb[0]} PDB file. It was omitted")
+                        continue
+                    else:
+                        PDB_list[i].append(request.PDB(fasta_list[i].identifier, pdb[0], pdb[1], './'
+                                                    + pdb[0] + '_' + fasta_list[i].identifier + '.pdb', 1, pdb[2], pdb[3], []))
+                        print("Done")
+        i = i + 1
+
 
 else:
     for i in range(0, len(fasta_list)):
@@ -98,7 +120,7 @@ else:
         except IndexError:
             AlphaFold_list.append(None)
             print("No AlphaFold match was found")
-        if AlphaFold_list[i].identity > 0.95:
+        if AlphaFold_list[i].identity > options.alphafold_threshold:
             print(
                 f"The model fits with {AlphaFold_list[i].identifier.split('|')[1]} with {AlphaFold_list[i].identity} of identity \nSearching PDB files linked to the UniProt code")
             request.download_uniprot_xml(
@@ -118,23 +140,24 @@ else:
                         print("Done")
             else:
                 try:
-                    PDB_list.append(
+                    PDB_list[i].append(
                         PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
                     print(
-                        f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
+                        f"PDB match: {PDB_list[i][0].identifier} ({PDB_list[i][0].identity:.2f})")
                 except IndexError:
-                    PDB_list.append(None)
+                    PDB_list[i][0].append(None)
                     print(f"No PDB match was found")    
         else:
             try:
-                PDB_list.append(
+                PDB_list[i].append(
                     PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
                 print(
-                    f"PDB match: {PDB_list[i].identifier} ({PDB_list[i].identity:.2f})")
+                    f"PDB match: {PDB_list[i][0].identifier} ({PDB_list[i][0].identity:.2f})")
             except IndexError:
-                PDB_list.append(None)
+                PDB_list[i].append(None)
                 print(f"No PDB match was found")
-
+        if i < len(fasta_list):
+            PDB_list.append([])
 
 def retrieving_score(pdb_prefix, chain_id=None):
     print(
@@ -147,24 +170,24 @@ def retrieving_score(pdb_prefix, chain_id=None):
 
 for i in range(0, len(fasta_list)):
     plot = True
-    if AlphaFold_list[i] != None and PDB_list[i] != None:
-        if AlphaFold_list[i].identity > 0.95 and pdb_list:
+    if AlphaFold_list[i] != None and PDB_list[i][0] != None:
+        if AlphaFold_list[i].identity > options.alphafold_threshold and pdb_list:
             matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold")
             matrix_pdb = calculus.general_calculation_multiple(
                 PDB_list[i], AlphaFold_list[i])
-        elif AlphaFold_list[i].identity > PDB_list[i].identity:
+        elif AlphaFold_list[i].identity > PDB_list[i][0].identity:
             matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold")
         else:
             matrix = retrieving_score(fasta_list[i].identifier,
                              PDB_list[i].chain)
-    elif AlphaFold_list[i] != None and PDB_list[i] == None:
+    elif AlphaFold_list[i] != None and PDB_list[i][0] == None:
         matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold")
-    elif AlphaFold_list[i] == None and PDB_list[i] != None:
-        matrix = retrieving_score(fasta_list[i].identifier, PDB_list[i].chain)
+    elif AlphaFold_list[i] == None and PDB_list[i][0] != None:
+        matrix = retrieving_score(fasta_list[i].identifier, PDB_list[i][0].chain)
     else:
         print("No PDB files were obtained. Flexibility cannot be calculated")
         plot = False
     if plot:
         print("Saving data and plot...")
-        calculus.represent_data(matrix, "./", matrix_pdb)
+        calculus.represent_data(matrix, options.output_file, matrix_pdb)
         print("Done")
