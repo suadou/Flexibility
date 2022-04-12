@@ -474,7 +474,7 @@ def represent_data(matrix, out, pdb_matrix_alphafold = []):
         plt.legend(loc='lower left')
     else:
         plt.scatter(list(map(float, matrix[1:, 2])), list(map(float, matrix[1:, 3])), color='red', marker='.')
-     plt.title('Flexibility score vs residue position', fontsize=14)
+    plt.title('Flexibility score vs residue position', fontsize=14)
     plt.xlabel('Residue position', fontsize=14)
     plt.ylabel('Flexibility score', fontsize=14)
     plt.grid(True)
