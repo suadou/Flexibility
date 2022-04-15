@@ -474,7 +474,7 @@ def represent_data(matrix, out, pdb_matrix_alphafold = []):
         plt.legend(loc='lower left')
     else:
         matrix = np.array(matrix, dtype = "str")
-        plt.scatter(list(map(float, matrix[1, 2])), list(map(float, matrix[1:, 3])), color='red', marker='.')
+        plt.scatter(list(map(float, matrix[1:, 2])), list(map(float, matrix[1:, 3])), color='red', marker='.')
     plt.title('RMSF Vs Residue number', fontsize=14)
     plt.xlabel('Residue number', fontsize=14)
     plt.ylabel('Normalised RMSF', fontsize=14)
