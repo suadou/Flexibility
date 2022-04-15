@@ -1,5 +1,5 @@
 
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 
 setup(name='flexprot',
@@ -7,16 +7,17 @@ setup(name='flexprot',
       description='Assesment of protein flexibility',
       author='Silvia González López & Sergio Suárez Dou',
       author_email='silvia.gonzalez10@estudiant.upf.edu',
-      packages=['my_package', 'my_package.subpackage'],
+      packages=find_packages(),
       install_requires=[
-          'Bio',
+          'biopython',
           'scipy',
           'pandas',
           'matplotlib',
           'seaborn',
           'argparse',
-          'threading',
+          'threaded',
+          'configparser',
           'numpy',
-          're',
-          'math'
+          'regex',
+          'python-math'
           ])
