@@ -139,6 +139,7 @@ elif config['blast']['local'] == 'True':
                                                     + pdb[0] + '_' + fasta_list[i].identifier + '.pdb', 1, pdb[2], pdb[3], []))
                         print("Done")
             else:
+                print("No PDB sequences found linked to {AlphaFold_list[i].identifier.split('|')[1]}")
                 try:
                     PDB_list[i].append(
                         PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
@@ -167,14 +168,14 @@ def retrieving_score(pdb_prefix, chain_id=None):
     print("Done")
     return matrix
 
-
+name = options.output_file 
 for i in range(0, len(fasta_list)):
     if len(fasta_list) > 1:
-	    options.output_file = options.output_file + "_" + fasta_list[i]
+	    options.output_file = name + "_" + fasta_list[i].identifier
     plot = True
     matrix_pdb = []
     if AlphaFold_list[i] != None and PDB_list[i][0] != None:
-        if AlphaFold_list[i].identity > float(options.alphafold_threshold) and pdb_list:
+        if AlphaFold_list[i].identity > float(options.alphafold_threshold) and len(PDB_list[i]) > 1:
             matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold")
             matrix_pdb = calculus.general_calculation_multiple(
                 PDB_list[i], AlphaFold_list[i])
