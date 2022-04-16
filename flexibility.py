@@ -145,7 +145,7 @@ elif config['blast']['local'] == 'True':
                     print(
                         f"PDB match: {PDB_list[i][0].identifier} ({PDB_list[i][0].identity:.2f})")
                 except IndexError:
-                    PDB_list[i][0].append(None)
+                    PDB_list[i].append(None)
                     print(f"No PDB match was found")    
         else:
             try:
@@ -169,6 +169,8 @@ def retrieving_score(pdb_prefix, chain_id=None):
 
 
 for i in range(0, len(fasta_list)):
+    if len(fasta_list) > 1:
+	    options.output_file = options.output_file + "_" + fasta_list[i]
     plot = True
     matrix_pdb = []
     if AlphaFold_list[i] != None and PDB_list[i][0] != None:
@@ -190,5 +192,5 @@ for i in range(0, len(fasta_list)):
         plot = False
     if plot:
         print("Saving data and plot...")
-        calculus.represent_data(matrix, options.output_file)
+        calculus.represent_data(matrix, options.output_file, matrix_pdb)
         print("Done")
