@@ -1,0 +1,526 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<uniprot xmlns="http://uniprot.org/uniprot" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://uniprot.org/uniprot http://www.uniprot.org/support/docs/uniprot.xsd">
+<entry dataset="Swiss-Prot" created="2009-05-26" modified="2021-09-29" version="89">
+<accession>A7X8B7</accession>
+<name>PRGR_GORGO</name>
+<protein>
+<recommendedName>
+<fullName>Progesterone receptor</fullName>
+<shortName>PR</shortName>
+</recommendedName>
+<alternativeName>
+<fullName>Nuclear receptor subfamily 3 group C member 3</fullName>
+</alternativeName>
+</protein>
+<gene>
+<name type="primary">PGR</name>
+<name type="synonym">NR3C3</name>
+</gene>
+<organism>
+<name type="scientific">Gorilla gorilla gorilla</name>
+<name type="common">Western lowland gorilla</name>
+<dbReference type="NCBI Taxonomy" id="9595"/>
+<lineage>
+<taxon>Eukaryota</taxon>
+<taxon>Metazoa</taxon>
+<taxon>Chordata</taxon>
+<taxon>Craniata</taxon>
+<taxon>Vertebrata</taxon>
+<taxon>Euteleostomi</taxon>
+<taxon>Mammalia</taxon>
+<taxon>Eutheria</taxon>
+<taxon>Euarchontoglires</taxon>
+<taxon>Primates</taxon>
+<taxon>Haplorrhini</taxon>
+<taxon>Catarrhini</taxon>
+<taxon>Hominidae</taxon>
+<taxon>Gorilla</taxon>
+</lineage>
+</organism>
+<reference key="1">
+<citation type="journal article" date="2008" name="Mol. Phylogenet. Evol." volume="47" first="637" last="649">
+<title>The human progesterone receptor shows evidence of adaptive evolution associated with its ability to act as a transcription factor.</title>
+<authorList>
+<person name="Chen C."/>
+<person name="Opazo J.C."/>
+<person name="Erez O."/>
+<person name="Uddin M."/>
+<person name="Santolaya-Forgas J."/>
+<person name="Goodman M."/>
+<person name="Grossman L.I."/>
+<person name="Romero R."/>
+<person name="Wildman D.E."/>
+</authorList>
+<dbReference type="PubMed" id="18375150"/>
+<dbReference type="DOI" id="10.1016/j.ympev.2007.12.026"/>
+</citation>
+<scope>NUCLEOTIDE SEQUENCE [GENOMIC DNA]</scope>
+</reference>
+<comment type="function">
+<text evidence="2">The steroid hormones and their receptors are involved in the regulation of eukaryotic gene expression and affect cellular proliferation and differentiation in target tissues. Transcriptional activator of several progesteron-dependent promoters in a variety of cell types. Involved in activation of SRC-dependent MAPK signaling on hormone stimulation.</text>
+</comment>
+<comment type="subunit">
+<text evidence="2 3">Interacts with SMARD1 and UNC45A. Interacts with CUEDC2; the interaction promotes ubiquitination, decreases sumoylation, and represses transcriptional activity. Interacts with PIAS3; the interaction promotes sumoylation of PR in a hormone-dependent manner, inhibits DNA-binding, and alters nuclear export. Interacts with SP1; the interaction requires ligand-induced phosphorylation on Ser-345 by ERK1/2-MAPK. Interacts with PRMT2. Interacts with NCOA2 and NCOA1. Interacts with KLF9. Interacts with GTF2B (By similarity).</text>
+</comment>
+<comment type="subcellular location">
+<subcellularLocation>
+<location>Nucleus</location>
+</subcellularLocation>
+<subcellularLocation>
+<location>Cytoplasm</location>
+</subcellularLocation>
+<text evidence="1">Nucleoplasmic shuttling is both hormone- and cell cycle-dependent. On hormone stimulation, retained in the cytoplasm in the G(1) and G(2)/M phases (By similarity).</text>
+</comment>
+<comment type="domain">
+<text>Composed of three domains: a modulating N-terminal domain, a DNA-binding domain and a C-terminal ligand-binding domain.</text>
+</comment>
+<comment type="PTM">
+<text evidence="1">Phosphorylated on multiple serine sites. Several of these sites are hormone-dependent. Phosphorylation on Ser-294 is highly hormone-dependent and modulates ubiquitination and sumoylation on Lys-388. Phosphorylation on Ser-102 and Ser-345 also requires induction by hormone. Basal phosphorylation on Ser-81, Ser-162, Ser-190 and Ser-400 is increased in response to progesterone and can be phosphorylated in vitro by the CDK2-A1 complex. Increased levels of phosphorylation on Ser-400 also in the presence of EGF, heregulin, IGF, PMA and FBS. Phosphorylation at this site by CDK2 is ligand-independent, and increases nuclear translocation and transcriptional activity. Phosphorylation at Ser-162 and Ser-294, but not at Ser-190, is impaired during the G(2)/M phase of the cell cycle. Phosphorylation on Ser-345 by ERK1/2 MAPK is required for interaction with SP1 (By similarity).</text>
+</comment>
+<comment type="PTM">
+<text evidence="1">Sumoylation is hormone-dependent and represses transcriptional activity. Sumoylation on all three sites is enhanced by PIAS3. Desumoylated by SENP1. Sumoylation on Lys-388, the main site of sumoylation, is repressed by ubiquitination on the same site, and modulated by phosphorylation at Ser-294 (By similarity).</text>
+</comment>
+<comment type="PTM">
+<text evidence="1">Ubiquitination is hormone-dependent and represses sumoylation on the same site. Promoted by MAPK-mediated phosphorylation on Ser-294 (By similarity).</text>
+</comment>
+<comment type="PTM">
+<text evidence="1">Palmitoylated by ZDHHC7 and ZDHHC21. Palmitoylation is required for plasma membrane targeting and for rapid intracellular signaling via ERK and AKT kinases and cAMP generation (By similarity).</text>
+</comment>
+<comment type="similarity">
+<text evidence="8">Belongs to the nuclear hormone receptor family.</text>
+</comment>
+<dbReference type="EMBL" id="DQ234982">
+<property type="protein sequence ID" value="ABB72142.1"/>
+<property type="molecule type" value="Genomic_DNA"/>
+</dbReference>
+<dbReference type="RefSeq" id="XP_004052058.1">
+<property type="nucleotide sequence ID" value="XM_004052010.2"/>
+</dbReference>
+<dbReference type="SMR" id="A7X8B7"/>
+<dbReference type="STRING" id="9593.ENSGGOP00000024814"/>
+<dbReference type="Ensembl" id="ENSGGOT00000027848">
+<property type="protein sequence ID" value="ENSGGOP00000024814"/>
+<property type="gene ID" value="ENSGGOG00000016358"/>
+</dbReference>
+<dbReference type="GeneID" id="101152212"/>
+<dbReference type="KEGG" id="ggo:101152212"/>
+<dbReference type="CTD" id="5241"/>
+<dbReference type="eggNOG" id="KOG3575">
+<property type="taxonomic scope" value="Eukaryota"/>
+</dbReference>
+<dbReference type="GeneTree" id="ENSGT00940000159713"/>
+<dbReference type="InParanoid" id="A7X8B7"/>
+<dbReference type="OMA" id="YKAEGAQ"/>
+<dbReference type="OrthoDB" id="615449at2759"/>
+<dbReference type="Proteomes" id="UP000001519">
+<property type="component" value="Chromosome 11"/>
+</dbReference>
+<dbReference type="Bgee" id="ENSGGOG00000016358">
+<property type="expression patterns" value="Expressed in multi-cellular organism and 6 other tissues"/>
+</dbReference>
+<dbReference type="GO" id="GO:0005737">
+<property type="term" value="C:cytoplasm"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="UniProtKB-SubCell"/>
+</dbReference>
+<dbReference type="GO" id="GO:0005634">
+<property type="term" value="C:nucleus"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="UniProtKB-SubCell"/>
+</dbReference>
+<dbReference type="GO" id="GO:0051117">
+<property type="term" value="F:ATPase binding"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0001228">
+<property type="term" value="F:DNA-binding transcription activator activity, RNA polymerase II-specific"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0042802">
+<property type="term" value="F:identical protein binding"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0004879">
+<property type="term" value="F:nuclear receptor activity"/>
+<property type="evidence" value="ECO:0000318"/>
+<property type="project" value="GO_Central"/>
+</dbReference>
+<dbReference type="GO" id="GO:0000978">
+<property type="term" value="F:RNA polymerase II cis-regulatory region sequence-specific DNA binding"/>
+<property type="evidence" value="ECO:0000318"/>
+<property type="project" value="GO_Central"/>
+</dbReference>
+<dbReference type="GO" id="GO:0005496">
+<property type="term" value="F:steroid binding"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="UniProtKB-KW"/>
+</dbReference>
+<dbReference type="GO" id="GO:0003707">
+<property type="term" value="F:steroid hormone receptor activity"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0001223">
+<property type="term" value="F:transcription coactivator binding"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0008270">
+<property type="term" value="F:zinc ion binding"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="InterPro"/>
+</dbReference>
+<dbReference type="GO" id="GO:0002070">
+<property type="term" value="P:epithelial cell maturation"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0030518">
+<property type="term" value="P:intracellular steroid hormone receptor signaling pathway"/>
+<property type="evidence" value="ECO:0000318"/>
+<property type="project" value="GO_Central"/>
+</dbReference>
+<dbReference type="GO" id="GO:0048286">
+<property type="term" value="P:lung alveolus development"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0010629">
+<property type="term" value="P:negative regulation of gene expression"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0001542">
+<property type="term" value="P:ovulation from ovarian follicle"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0038001">
+<property type="term" value="P:paracrine signaling"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0050847">
+<property type="term" value="P:progesterone receptor signaling pathway"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0050678">
+<property type="term" value="P:regulation of epithelial cell proliferation"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="GO" id="GO:0006357">
+<property type="term" value="P:regulation of transcription by RNA polymerase II"/>
+<property type="evidence" value="ECO:0000318"/>
+<property type="project" value="GO_Central"/>
+</dbReference>
+<dbReference type="GO" id="GO:0060748">
+<property type="term" value="P:tertiary branching involved in mammary gland duct morphogenesis"/>
+<property type="evidence" value="ECO:0007669"/>
+<property type="project" value="Ensembl"/>
+</dbReference>
+<dbReference type="Gene3D" id="1.10.565.10">
+<property type="match status" value="1"/>
+</dbReference>
+<dbReference type="Gene3D" id="3.30.50.10">
+<property type="match status" value="1"/>
+</dbReference>
+<dbReference type="InterPro" id="IPR035500">
+<property type="entry name" value="NHR-like_dom_sf"/>
+</dbReference>
+<dbReference type="InterPro" id="IPR000536">
+<property type="entry name" value="Nucl_hrmn_rcpt_lig-bd"/>
+</dbReference>
+<dbReference type="InterPro" id="IPR001723">
+<property type="entry name" value="Nuclear_hrmn_rcpt"/>
+</dbReference>
+<dbReference type="InterPro" id="IPR000128">
+<property type="entry name" value="Progest_rcpt"/>
+</dbReference>
+<dbReference type="InterPro" id="IPR001628">
+<property type="entry name" value="Znf_hrmn_rcpt"/>
+</dbReference>
+<dbReference type="InterPro" id="IPR013088">
+<property type="entry name" value="Znf_NHR/GATA"/>
+</dbReference>
+<dbReference type="Pfam" id="PF00104">
+<property type="entry name" value="Hormone_recep"/>
+<property type="match status" value="1"/>
+</dbReference>
+<dbReference type="Pfam" id="PF02161">
+<property type="entry name" value="Prog_receptor"/>
+<property type="match status" value="1"/>
+</dbReference>
+<dbReference type="Pfam" id="PF00105">
+<property type="entry name" value="zf-C4"/>
+<property type="match status" value="1"/>
+</dbReference>
+<dbReference type="PRINTS" id="PR00544">
+<property type="entry name" value="PROGESTRONER"/>
+</dbReference>
+<dbReference type="PRINTS" id="PR00398">
+<property type="entry name" value="STRDHORMONER"/>
+</dbReference>
+<dbReference type="PRINTS" id="PR00047">
+<property type="entry name" value="STROIDFINGER"/>
+</dbReference>
+<dbReference type="SMART" id="SM00430">
+<property type="entry name" value="HOLI"/>
+<property type="match status" value="1"/>
+</dbReference>
+<dbReference type="SMART" id="SM00399">
+<property type="entry name" value="ZnF_C4"/>
+<property type="match status" value="1"/>
+</dbReference>
+<dbReference type="SUPFAM" id="SSF48508">
+<property type="entry name" value="SSF48508"/>
+<property type="match status" value="1"/>
+</dbReference>
+<dbReference type="PROSITE" id="PS51843">
+<property type="entry name" value="NR_LBD"/>
+<property type="match status" value="1"/>
+</dbReference>
+<dbReference type="PROSITE" id="PS00031">
+<property type="entry name" value="NUCLEAR_REC_DBD_1"/>
+<property type="match status" value="1"/>
+</dbReference>
+<dbReference type="PROSITE" id="PS51030">
+<property type="entry name" value="NUCLEAR_REC_DBD_2"/>
+<property type="match status" value="1"/>
+</dbReference>
+<proteinExistence type="inferred from homology"/>
+<keyword id="KW-0963">Cytoplasm</keyword>
+<keyword id="KW-0238">DNA-binding</keyword>
+<keyword id="KW-1017">Isopeptide bond</keyword>
+<keyword id="KW-0446">Lipid-binding</keyword>
+<keyword id="KW-0449">Lipoprotein</keyword>
+<keyword id="KW-0479">Metal-binding</keyword>
+<keyword id="KW-0539">Nucleus</keyword>
+<keyword id="KW-0564">Palmitate</keyword>
+<keyword id="KW-0597">Phosphoprotein</keyword>
+<keyword id="KW-0675">Receptor</keyword>
+<keyword id="KW-1185">Reference proteome</keyword>
+<keyword id="KW-0754">Steroid-binding</keyword>
+<keyword id="KW-0804">Transcription</keyword>
+<keyword id="KW-0805">Transcription regulation</keyword>
+<keyword id="KW-0832">Ubl conjugation</keyword>
+<keyword id="KW-0862">Zinc</keyword>
+<keyword id="KW-0863">Zinc-finger</keyword>
+<feature type="chain" description="Progesterone receptor" id="PRO_0000375854">
+<location>
+<begin position="1"/>
+<end position="933"/>
+</location>
+</feature>
+<feature type="domain" description="NR LBD" evidence="6">
+<location>
+<begin position="679"/>
+<end position="913"/>
+</location>
+</feature>
+<feature type="DNA-binding region" description="Nuclear receptor" evidence="5">
+<location>
+<begin position="567"/>
+<end position="639"/>
+</location>
+</feature>
+<feature type="zinc finger region" description="NR C4-type" evidence="5">
+<location>
+<begin position="567"/>
+<end position="587"/>
+</location>
+</feature>
+<feature type="zinc finger region" description="NR C4-type" evidence="5">
+<location>
+<begin position="603"/>
+<end position="627"/>
+</location>
+</feature>
+<feature type="region of interest" description="Modulating, Pro-Rich">
+<location>
+<begin position="1"/>
+<end position="566"/>
+</location>
+</feature>
+<feature type="region of interest" description="Disordered" evidence="7">
+<location>
+<begin position="1"/>
+<end position="256"/>
+</location>
+</feature>
+<feature type="region of interest" description="AF3; mediates transcriptional activation" evidence="2">
+<location>
+<begin position="1"/>
+<end position="164"/>
+</location>
+</feature>
+<feature type="region of interest" description="Mediates transcriptional transrepression" evidence="2">
+<location>
+<begin position="165"/>
+<end position="305"/>
+</location>
+</feature>
+<feature type="region of interest" description="Disordered" evidence="7">
+<location>
+<begin position="331"/>
+<end position="378"/>
+</location>
+</feature>
+<feature type="region of interest" description="Disordered" evidence="7">
+<location>
+<begin position="415"/>
+<end position="452"/>
+</location>
+</feature>
+<feature type="region of interest" description="AF1; mediates transcriptional activation" evidence="2">
+<location>
+<begin position="456"/>
+<end position="546"/>
+</location>
+</feature>
+<feature type="region of interest" description="AF2; mediates transcriptional activation" evidence="2">
+<location>
+<begin position="687"/>
+<end position="933"/>
+</location>
+</feature>
+<feature type="short sequence motif" description="LXXL motif 1" evidence="2">
+<location>
+<begin position="55"/>
+<end position="59"/>
+</location>
+</feature>
+<feature type="short sequence motif" description="LXXL motif 2" evidence="2">
+<location>
+<begin position="115"/>
+<end position="119"/>
+</location>
+</feature>
+<feature type="short sequence motif" description="Nuclear localization signal" evidence="4">
+<location>
+<begin position="183"/>
+<end position="187"/>
+</location>
+</feature>
+<feature type="compositionally biased region" description="Polar residues" evidence="7">
+<location>
+<begin position="68"/>
+<end position="84"/>
+</location>
+</feature>
+<feature type="compositionally biased region" description="Polar residues" evidence="7">
+<location>
+<begin position="120"/>
+<end position="135"/>
+</location>
+</feature>
+<feature type="compositionally biased region" description="Pro residues" evidence="7">
+<location>
+<begin position="415"/>
+<end position="433"/>
+</location>
+</feature>
+<feature type="modified residue" description="Phosphoserine" evidence="2">
+<location>
+<position position="20"/>
+</location>
+</feature>
+<feature type="modified residue" description="Phosphoserine" evidence="2">
+<location>
+<position position="81"/>
+</location>
+</feature>
+<feature type="modified residue" description="Phosphoserine" evidence="2">
+<location>
+<position position="130"/>
+</location>
+</feature>
+<feature type="modified residue" description="Phosphoserine" evidence="2">
+<location>
+<position position="162"/>
+</location>
+</feature>
+<feature type="modified residue" description="Phosphoserine" evidence="2">
+<location>
+<position position="190"/>
+</location>
+</feature>
+<feature type="modified residue" description="Phosphoserine" evidence="2">
+<location>
+<position position="213"/>
+</location>
+</feature>
+<feature type="modified residue" description="Phosphoserine; by MAPK1" evidence="2">
+<location>
+<position position="294"/>
+</location>
+</feature>
+<feature type="modified residue" description="Phosphoserine; by MAPK" evidence="2">
+<location>
+<position position="345"/>
+</location>
+</feature>
+<feature type="modified residue" description="Phosphoserine; by CDK2" evidence="2">
+<location>
+<position position="400"/>
+</location>
+</feature>
+<feature type="modified residue" description="Phosphoserine" evidence="2">
+<location>
+<position position="676"/>
+</location>
+</feature>
+<feature type="cross-link" description="Glycyl lysine isopeptide (Lys-Gly) (interchain with G-Cter in SUMO); alternate" evidence="1">
+<location>
+<position position="388"/>
+</location>
+</feature>
+<feature type="cross-link" description="Glycyl lysine isopeptide (Lys-Gly) (interchain with G-Cter in ubiquitin); alternate" evidence="2">
+<location>
+<position position="388"/>
+</location>
+</feature>
+<feature type="cross-link" description="Glycyl lysine isopeptide (Lys-Gly) (interchain with G-Cter in SUMO)" evidence="1">
+<location>
+<position position="531"/>
+</location>
+</feature>
+<evidence key="1" type="ECO:0000250"/>
+<evidence key="2" type="ECO:0000250">
+<source>
+<dbReference type="UniProtKB" id="P06401"/>
+</source>
+</evidence>
+<evidence key="3" type="ECO:0000250">
+<source>
+<dbReference type="UniProtKB" id="Q00175"/>
+</source>
+</evidence>
+<evidence key="4" type="ECO:0000255"/>
+<evidence key="5" type="ECO:0000255">
+<source>
+<dbReference type="PROSITE-ProRule" id="PRU00407"/>
+</source>
+</evidence>
+<evidence key="6" type="ECO:0000255">
+<source>
+<dbReference type="PROSITE-ProRule" id="PRU01189"/>
+</source>
+</evidence>
+<evidence key="7" type="ECO:0000256">
+<source>
+<dbReference type="SAM" id="MobiDB-lite"/>
+</source>
+</evidence>
+<evidence key="8" type="ECO:0000305"/>
+<sequence length="933" mass="98830" checksum="9C1080538291E6E6" modified="2007-10-23" version="1">MTELKAKGPRAPHVAGGPPSPEVGSPLLCRPAAGPYPGSQTSDTLPEVSAIPISLDGLLFPRPCQGQDPSDEKTQDQQSLSDVEGAYSRAEATRGAGGSSSSPPEKDSGLLDSVLETLLAPSGPGQSQPSPPACEVTSSWCLFGPELPEDPPAAPATQGVLSPLMSRSGGKAGDSSGTAAAHKVLPRGLSPSRQLLLPVSGSPHWSGAPVKPSPQPAAVEVEEEDGSESEESAGPLLKGKPRALGGAAAGGGAAAVPPGAAAGGVALVPKEDSRFSAPRVALVEQDAPMAPGRSPLATTVMDFIHVPILPLNHALLAARTRQLLEDESYDGGAGAASAFAPPRSSPSASSTPVAVGDFPDCAYPPDAEPKDDAYPLYSDFQPPALKIKEEEEGAEASARSPRSYLVAGANPAAFPDFPLGPPPPLPPRAPPSRPGEAAVTAAPASASVSSASSSGSTLECILYKAEGAPPQQGPFAPPPCKAPGASGCLLPRDGLPSTSASAAAAGAAPALYPALGLNGLPQLGYQAAVLKEGLPQVYPPYLNYLRPDSEASQSPQYSFESLPQKICLICGDEASGCHYGVLTCGSCKVFFKRAMEGQHNYLCAGRNDCIVDKIRRKNCPACRLRKCCQAGMVLGGRKFKKFNKVRVVRALDAVALPQPVGIPNESQALSQRFTFSPGQDIQLIPPLINLLMSIEPDVIYAGHDNTKPDTSSSLLTSLNQLGERQLLSVVKWSKSLPGFRNLHIDDQITLIQYSWMSLMVFGLGWRSYKHVSGQMLYFAPDLILNEQRMKESSFYSLCLTMWQIPQEFVKLQVSQEEFLCMKVLLLLNTIPLEGLRSQTQFEEMRSSYIRELIKAIGLRQKGVVSSSQRFYQLTKLLDNLHDLVKQLHLYCLNTFIQSRALSVEFPEMMSEVIAAQLPKILAGMVKPLLFHKK</sequence>
+</entry>
+<copyright>
+Copyrighted by the UniProt Consortium, see https://www.uniprot.org/terms
+Distributed under the Creative Commons Attribution (CC BY 4.0) License
+</copyright>
+</uniprot>
