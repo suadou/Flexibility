@@ -465,6 +465,11 @@ def general_calculation_multiple(pdb_list, alphafold):
     return flexibility_array
 
 def represent_data(matrix, out, pdb_matrix_alphafold = []):
+    """
+    Using a matrix with normalized flexibility scores it returns a graphical representation of them and a text file with the values. 
+    Flexibility score (y-axis) vs. Reside number (x-asis). If it AlphaFold score and PDB score is provided
+    it represents both in the same plot.
+    """
     if len(pdb_matrix_alphafold) > 0:
         matrix = np.concatenate((np.asarray(matrix, dtype = "str").transpose(), pdb_matrix_alphafold)).transpose()
         mask = matrix[0:, -2] != None
