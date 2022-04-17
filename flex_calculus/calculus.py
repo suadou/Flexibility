@@ -327,7 +327,7 @@ def calculation_from_crystal(pdb_file, name_chain):
     scores = []
 
     # Write the header of the output file
-    scores.append(["ResName", "Chain", "ResID", "RMSF"])
+    scores.append(["ResName", "Chain", "ResID", "Flex_score"])
 
     # Generate an array with flexibility scores
     flexibility = []
