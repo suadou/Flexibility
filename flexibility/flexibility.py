@@ -41,7 +41,7 @@ def alphafold(query, local, database=None):
         BLAST = request.blast_commandline(query, database)
         BLAST = BLAST[0].split('\n|\r')
         for seq in request.parse_blast(BLAST):
-            if request.download_AlphaFold(query, seq[0].split('|')[1], './') == False:
+            if request.download_alphafold(query, seq[0].split('|')[1], './') == False:
                 continue
             else:
                 return request.Pdb(
