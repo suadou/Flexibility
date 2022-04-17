@@ -480,9 +480,9 @@ def represent_data(matrix, out, pdb_matrix_alphafold = []):
     else:
         matrix = np.array(matrix, dtype = "str")
         plt.scatter(list(map(float, matrix[1:, 2])), list(map(float, matrix[1:, 3])), color='red', marker='.')
-    plt.title('RMSF Vs Residue number', fontsize=14)
-    plt.xlabel('Residue number', fontsize=14)
-    plt.ylabel('Normalised RMSF', fontsize=14)
+    plt.title('Flexibility score vs residue position', fontsize=14)
+    plt.xlabel('Residue position', fontsize=14)
+    plt.ylabel('Flexibility score', fontsize=14)
     plt.grid(True)
     plt.savefig(out + ".png", dpi=600)
     plt.clf()    
