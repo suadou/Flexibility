@@ -1,6 +1,6 @@
 """
 request module search in PDB and SwissProt database using BLASTp looking for PDB
-files from X-ray difraction and AlphaFold prediction with the best percentage
+files from empirical reports and AlphaFold prediction with the best percentage
 of identity.
 """
 
@@ -10,29 +10,33 @@ import requests
 import re
 
 
-def BLAST_commandline(query, database):
+def blast_commandline(query, database):
+    """
+    Using a Query class as input it returns a XML BLASTp results from a database (PDB or Swissprot)
+    running in local.
+    """
     query_string = '>' + query.identifier + '\n' + str(query.sequence)
     blast_cline = NcbiblastpCommandline(
         db=database, max_target_seqs=50, evalue=1e-5, outfmt='6 sseqid length nident sstart send qseq')
-    blast_XML = blast_cline(stdin=query_string)
-    return blast_XML
+    blast_xml = blast_cline(stdin=query_string)
+    return blast_xml
 
 
-def BLAST_PDB(query):
+def blast_pdb(query):
     """
     Using a Query class as input it returns a XML BLASTp results from PDB
     database.
     """
-    blast_XML = NCBIWWW.qblast("blastp", database="pdb", sequence=query.sequence,
+    blast_xml = NCBIWWW.qblast("blastp", database="pdb", sequence=query.sequence,
                                alignments=0, hitlist_size=50, expect=1e-5, format_type="XML")
-    return blast_XML
+    return blast_xml
 
 
-def download_PDB(query, pdb_id, path):
+def download_pdb(query, pdb_id, path):
     """
     Download PDB files from PDB. It returns a pdb file ([identifier].pdb) in the
     path directory. The arguments are the following:
-        query - It is a query class wich contains sequence and identifier.
+        query - It is a Query class wich contains sequence and identifier.
         pdb_id - It is the PDB identifier.
         path - Directory to download the PDB file.
     """
@@ -48,22 +52,22 @@ def download_PDB(query, pdb_id, path):
         return False
 
 
-def BLAST_sp(query):
+def blast_sp(query):
     """
     Using a Query class as input it returns a XML BLASTp results from SwissProt
     database.
     """
-    blast_XML = NCBIWWW.qblast("blastp", database="swissprot", sequence=query.sequence,
+    blast_xml = NCBIWWW.qblast("blastp", database="swissprot", sequence=query.sequence,
                                alignments=0, hitlist_size=50, expect=1e-5, format_type="XML")
-    return blast_XML
+    return blast_xml
 
 
-def download_AlphaFold(query, swissprot_id, path):
+def download_alphafold(query, swissprot_id, path):
     """
     Download PDB files from AlphaFold database. It returns a pdb file
     ([identifier]_AlphaFold.pdb) in the path directory. The arguments are the
     following:
-        query - It is a query class wich contains sequence and identifier.
+        query - It is a Query class wich contains sequence and identifier.
         swissprot_id - It is the SwissProt identifier.
         path - Directory to download the PDB file.
     """
@@ -78,15 +82,15 @@ def download_AlphaFold(query, swissprot_id, path):
         return False
 
 
-def download_uniprot_xml(Uniprot_id, path):
+def download_uniprot_xml(uniprot_id, path):
     """
     Download UniProtKB from Uniprot ID in XML format. It returns a XML file
     ([identifier]_uniprot.xml) in the path directory.
     """
-    url = "https://www.uniprot.org/uniprot/" + Uniprot_id + ".xml"
+    url = "https://www.uniprot.org/uniprot/" + uniprot_id + ".xml"
     if check_url(url):
         uniprot = requests.get(url)
-        fo = open(path + Uniprot_id+'_uniprot.xml', 'w')
+        fo = open(path + uniprot_id+'_uniprot.xml', 'w')
         for line in uniprot:
             fo.write(line.decode("utf-8"))
         fo.close()
@@ -94,14 +98,14 @@ def download_uniprot_xml(Uniprot_id, path):
         return False
 
 
-def parse_uniprot_xml(uniprot_XML):
+def parse_uniprot_xml(uniprot_xml):
     """
     parse_uniprot_xml is a function which returns in a list of tuples which contains
     the pdb id,the start and end residue position from a Uniprot data base from a
     uniprot XML file
     """
     list = []
-    fd = open(uniprot_XML, 'r')
+    fd = open(uniprot_xml, 'r')
     match = False
     for line in fd:
         if re.search('<dbReference type="PDB"', line) != None:
@@ -127,11 +131,11 @@ def parse_uniprot_xml(uniprot_XML):
     return list
 
 
-def parse_XML(blast_XML):
+def parse_xml(blast_xml):
     """
-    parse_XML is a generator function which use a XML BLASTp results from NCBI
+    parse_xml is a generator function which use a XML BLASTp results from NCBI
     as input to return a list containing PDB/SwissProt id, perecentage of identity
-    the start and end position, and the gapas from each match.
+    the start and end position, and the gaps from each match.
     """
     id = ''
     hsp_alignlen = ''
@@ -139,7 +143,7 @@ def parse_XML(blast_XML):
     start = ''
     end = ''
     gaps = []
-    for line in blast_XML:
+    for line in blast_xml:
         if re.search('<Hit_id>', line) != None:
             line = line.strip()
             line = line.rstrip()
@@ -189,6 +193,11 @@ def parse_XML(blast_XML):
 
 
 def parse_blast(blast):
+    """
+    parse_blast is a generator function which use a BLASTp results from NCBI
+    as input to return a list containing PDB/SwissProt id, perecentage of identity
+    the start and end position, and the gaps from each match.
+    """
     id = ''
     hsp_alignlen = ''
     hsp_identity = ''
@@ -225,9 +234,9 @@ def check_url(url):
     return website_is_up
 
 
-class PDB(object):
+class Pdb(object):
     """
-    PDB object stores the Query identifier of the record, the PDB identifier,
+    Pdb object stores the Query identifier of the record, the PDB identifier,
     the PDB file path downloaded, the percentage of identity of the match, the
     position of start and end of the match and the gap position.
     """
