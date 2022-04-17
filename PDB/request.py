@@ -1,5 +1,5 @@
 """
-request module search in PDB and SwissProt database using BLASTp looking for PDB
+Request module search in PDB and SwissProt database using BLASTp looking for PDB
 files from empirical reports and AlphaFold prediction with the best percentage
 of identity.
 """
@@ -12,7 +12,7 @@ import re
 
 def blast_commandline(query, database):
     """
-    Using a Query class as input it returns a XML BLASTp results from a database (PDB or Swissprot)
+    Using a Query class as input, it returns a XML BLASTp result from a database (PDB or Swissprot)
     running in local.
     """
     query_string = '>' + query.identifier + '\n' + str(query.sequence)
@@ -24,7 +24,7 @@ def blast_commandline(query, database):
 
 def blast_pdb(query):
     """
-    Using a Query class as input it returns a XML BLASTp results from PDB
+    Using a Query class as input, it returns a XML BLASTp result from PDB
     database.
     """
     blast_xml = NCBIWWW.qblast("blastp", database="pdb", sequence=query.sequence,
@@ -34,8 +34,10 @@ def blast_pdb(query):
 
 def download_pdb(query, pdb_id, path):
     """
-    Download PDB files from PDB. It returns a pdb file ([identifier].pdb) in the
-    path directory. The arguments are the following:
+    Download PDB files from PDB.
+    
+    It returns a pdb file ([identifier].pdb) in the path directory.
+    The arguments are the following:
         query - It is a Query class wich contains sequence and identifier.
         pdb_id - It is the PDB identifier.
         path - Directory to download the PDB file.
@@ -54,7 +56,7 @@ def download_pdb(query, pdb_id, path):
 
 def blast_sp(query):
     """
-    Using a Query class as input it returns a XML BLASTp results from SwissProt
+    Using a Query class as input it returns a XML BLASTp result from SwissProt
     database.
     """
     blast_xml = NCBIWWW.qblast("blastp", database="swissprot", sequence=query.sequence,
@@ -64,9 +66,10 @@ def blast_sp(query):
 
 def download_alphafold(query, swissprot_id, path):
     """
-    Download PDB files from AlphaFold database. It returns a pdb file
-    ([identifier]_AlphaFold.pdb) in the path directory. The arguments are the
-    following:
+    Download PDB files from AlphaFold database.
+    
+    It returns a pdb file ([identifier]_AlphaFold.pdb) in the path directory.
+    The arguments are the following:
         query - It is a Query class wich contains sequence and identifier.
         swissprot_id - It is the SwissProt identifier.
         path - Directory to download the PDB file.
@@ -100,9 +103,8 @@ def download_uniprot_xml(uniprot_id, path):
 
 def parse_uniprot_xml(uniprot_xml):
     """
-    parse_uniprot_xml is a function which returns in a list of tuples which contains
-    the pdb id,the start and end residue position from a Uniprot data base from a
-    uniprot XML file
+    Returns a list of tuples which contains the pdb ID, the start and end
+    residue positions from a Uniprot database inputting a UniProt XML file
     """
     list = []
     fd = open(uniprot_xml, 'r')
@@ -133,9 +135,9 @@ def parse_uniprot_xml(uniprot_xml):
 
 def parse_xml(blast_xml):
     """
-    parse_xml is a generator function which use a XML BLASTp results from NCBI
-    as input to return a list containing PDB/SwissProt id, perecentage of identity
-    the start and end position, and the gaps from each match.
+    Generator function which uses a XML BLASTp result from NCBI as input to 
+    return a list containing PDB/SwissProt ID, percentage of identity, the
+    start and end positions, and the gaps from each match.
     """
     id = ''
     hsp_alignlen = ''
@@ -194,9 +196,9 @@ def parse_xml(blast_xml):
 
 def parse_blast(blast):
     """
-    parse_blast is a generator function which use a BLASTp results from NCBI
-    as input to return a list containing PDB/SwissProt id, perecentage of identity
-    the start and end position, and the gaps from each match.
+    Generator function which uses a BLASTp result from NCBI as input to
+    return a list containing PDB/SwissProt ID, percentage of identity,
+    the start and end positions, and the gaps from each match.
     """
     id = ''
     hsp_alignlen = ''
@@ -236,9 +238,9 @@ def check_url(url):
 
 class Pdb(object):
     """
-    Pdb object stores the Query identifier of the record, the PDB identifier,
-    the PDB file path downloaded, the percentage of identity of the match, the
-    position of start and end of the match and the gap position.
+    Stores the Query identifier of the record, the PDB identifier, the
+    downloaded PDB file path, the percentage of identity of the match,
+    the start and end positions of the match, and the gap position.
     """
 
     def __init__(self, query, identifier, chain, path, identity, start, end, gaps):
