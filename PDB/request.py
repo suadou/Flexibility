@@ -62,7 +62,7 @@ def blast_sp(query):
     return blast_xml
 
 
-def download_alphafold(query, swissprot_id, path):
+def download_alphaFold(query, swissprot_id, path):
     """
     Download PDB files from AlphaFold database. It returns a pdb file
     ([identifier]_AlphaFold.pdb) in the path directory. The arguments are the
