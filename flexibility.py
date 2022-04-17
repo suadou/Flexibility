@@ -32,7 +32,7 @@ def alphafold(query, local, database=None):
     if local == False:
         BLAST = request.blast_sp(query)
         for seq in request.parse_xml(BLAST):
-            if request.download_AlphaFold(query, seq[0], './') == False:
+            if request.download_alphafold(query, seq[0], './') == False:
                 continue
             else:
                 return request.Pdb(
@@ -41,7 +41,7 @@ def alphafold(query, local, database=None):
         BLAST = request.blast_commandline(query, database)
         BLAST = BLAST[0].split('\n|\r')
         for seq in request.parse_blast(BLAST):
-            if request.download_AlphaFold(query, seq[0].split('|')[1], './') == False:
+            if request.download_alphafold(query, seq[0].split('|')[1], './') == False:
                 continue
             else:
                 return request.Pdb(
@@ -73,7 +73,7 @@ def pdb(query, local, database=None):
                 continue
             else:
                 return request.Pdb(
-                    query.identifier, seq[0], seq[0][5:], './' + query.identifier + '.pdb', seq[1], seq[2], seq[3], seq[4])
+                    query.identifier, seq[0], seq[0][5:], './'+ seq[0] + '_' + query.identifier + '.pdb', seq[1], seq[2], seq[3], seq[4])
 
 def retrieving_score(pdb_prefix, chain_id=None):
     """
@@ -98,7 +98,7 @@ print(f"{len(fasta_list)} record/s was/were read.")
 
 # Variables to store SwissProt and AlphaFold matches
 pdb_list = [[]]
-AlphaFold_list = []
+alphafold_list = []
 
 
 # Threading for API BLASTp. Online version
@@ -114,7 +114,7 @@ if config['blast']['local'] == 'False':
             target=pdb_list[i].append(pdb(fasta_list[i], False)))
         jobs.append(thread)
         # Thread to SwissProt database
-        thread = threading.Thread(target=AlphaFold_list.append(
+        thread = threading.Thread(target=alphafold_list.append(
             alphafold(fasta_list[i], False)))
         jobs.append(thread)
 
@@ -128,15 +128,15 @@ if config['blast']['local'] == 'False':
     
     # For each AlphaFold match check if the identity is higher than -alpha to search for PDB linked to its ids
     i = 0
-    for element in AlphaFold_list:
-        if element.identity > float(options.alphafold_threshold):
+    for element in alphafold_list:
+        if element != None and element.identity > float(options.alphafold_threshold):
             pdb_list[i] = []
             print(
-                f"The model fits with {AlphaFold_list[i].identifier} with {AlphaFold_list[i].identity} of identity \nSearching PDB files linked to the UniProt code")
+                f"The model fits with {alphafold_list[i].identifier} with {alphafold_list[i].identity} of identity \nSearching PDB files linked to the UniProt code")
             request.download_uniprot_xml(
-                AlphaFold_list[i].identifier, './')
+                alphafold_list[i].identifier, './')
             pdb_swissprotid = request.parse_uniprot_xml(
-                AlphaFold_list[i].identifier + '_uniprot.xml')
+                alphafold_list[i].identifier + '_uniprot.xml')
             if pdb_swissprotid:
                 print(f'{len(pdb_swissprotid)} PDB files found')
                 for pdb in pdb_swissprotid:
@@ -158,51 +158,53 @@ elif config['blast']['local'] == 'True':
         print(
             f"Searching similar sequences to {fasta_list[i].identifier} in SwissProt databases using BLASTp...")
         try:
-            AlphaFold_list.append(
+            alphafold_list.append(
                 alphafold(fasta_list[i], True, config['blast']['SwissProtdb_path']))
             print(
-                f"AlphaFold match: {AlphaFold_list[i].identifier.split('|')[1]} ({AlphaFold_list[i].identity:.2f})")
-        except IndexError:
-            AlphaFold_list.append(None)
+                f"AlphaFold match: {alphafold_list[i].identifier.split('|')[1]} ({alphafold_list[i].identity:.2f})")
+        except (IndexError, AttributeError):
+            alphafold_list.append(None)
             print("No AlphaFold match was found")
         # Searching for PDB files linked to the SwissProt id if identity is higher than a -alpha threshold
-        if AlphaFold_list[i].identity > float(options.alphafold_threshold):
+        if alphafold_list[i] != None and alphafold_list[i].identity > float(options.alphafold_threshold):
             print(
-                f"The model fits with {AlphaFold_list[i].identifier.split('|')[1]} with {AlphaFold_list[i].identity} of identity \nSearching PDB files linked to the UniProt code")
+                f"The model fits with {alphafold_list[i].identifier.split('|')[1]} with {alphafold_list[i].identity} of identity \nSearching PDB files linked to the UniProt code")
             request.download_uniprot_xml(
-                AlphaFold_list[i].identifier.split('|')[1], './')
+                alphafold_list[i].identifier.split('|')[1], './')
             pdb_swissprotid = request.parse_uniprot_xml(
-                AlphaFold_list[i].identifier.split('|')[1] + '_uniprot.xml')
+                alphafold_list[i].identifier.split('|')[1] + '_uniprot.xml')
             if pdb_swissprotid:
                 print(f'{len(pdb_swissprotid)} PDB files found')
-                for pdb in pdb_swissprotid:
-                    print(f"Downloading {pdb[0]} from PDB server...")
-                    if request.download_pdb(fasta_list[i], pdb[0], './') == False:
+                for pdb_hit in pdb_swissprotid:
+                    print(f"Downloading {pdb_hit[0]} from PDB server...")
+                    if request.download_pdb(fasta_list[i], pdb_hit[0], './') == False:
                         print("Cannot download {fasta_list[i]} PDB file. It was omitted")
                         continue
                     else:
-                        pdb_list[i].append(request.Pdb(fasta_list[i].identifier, pdb[0], pdb[1], './'
-                                                    + pdb[0] + '_' + fasta_list[i].identifier + '.pdb', 1, pdb[2], pdb[3], []))
+                        pdb_list[i].append(request.Pdb(fasta_list[i].identifier, pdb_hit[0], pdb_hit[1], './'
+                                                    + pdb_hit[0] + '_' + fasta_list[i].identifier + '.pdb', 1, pdb_hit[2], pdb_hit[3], []))
                         print("Done")
             # If no PDB is found linked to Swissprot id, it seeks for PDBs match using BLASTp
             else:
-                print(f"No PDB sequences found linked to {AlphaFold_list[i].identifier.split('|')[1]}")
+                print(f"No PDB sequences found linked to {alphafold_list[i].identifier.split('|')[1]}")
                 try:
                     pdb_list[i].append(
                         pdb(fasta_list[i], True, config['blast']['PDBdb_path']))
                     print(
                         f"PDB match: {pdb_list[i][0].identifier} ({pdb_list[i][0].identity:.2f})")
-                except IndexError:
+                except (IndexError, AttributeError):
                     pdb_list[i].append(None)
                     print(f"No PDB match was found")    
         # If identity AlphaFold is lower than -alpha it seeks for PDBs matches using BLASTp
         else:
             try:
+                print(
+                       f"Searching similar sequences to {fasta_list[i].identifier} in PDB database using BLASTp...")
                 pdb_list[i].append(
                     pdb(fasta_list[i], True, config['blast']['PDBdb_path']))
                 print(
                     f"PDB match: {pdb_list[i][0].identifier} ({pdb_list[i][0].identity:.2f})")
-            except IndexError:
+            except (IndexError, AttributeError):
                 pdb_list[i].append(None)
                 print(f"No PDB match was found")
         if i < len(fasta_list):
@@ -216,20 +218,20 @@ for i in range(0, len(fasta_list)):
 	    options.output_file = name + "_" + fasta_list[i].identifier
     plot = True
     matrix_pdb = []
-    if AlphaFold_list[i] != None and pdb_list[i][0] != None:
-        if AlphaFold_list[i].identity > float(options.alphafold_threshold) and len(pdb_list[i]) > 1:
+    if alphafold_list[i] != None and pdb_list[i][0] != None:
+        if alphafold_list[i].identity > float(options.alphafold_threshold) and len(pdb_list[i]) > 1:
             matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold")
             matrix_pdb = calculus.general_calculation_multiple(
-                pdb_list[i], AlphaFold_list[i])
-        elif AlphaFold_list[i].identity > pdb_list[i][0].identity:
+                pdb_list[i], alphafold_list[i])
+        elif alphafold_list[i].identity > pdb_list[i][0].identity:
             matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold")
         else:
-            matrix = retrieving_score(fasta_list[i].identifier,
+            matrix = retrieving_score(pdb_list[i][0].identifier[0:4]+"_"+fasta_list[i].identifier,
                              pdb_list[i][0].chain)
-    elif AlphaFold_list[i] != None and pdb_list[i][0] == None:
+    elif alphafold_list[i] != None and pdb_list[i][0] == None:
         matrix = retrieving_score(fasta_list[i].identifier+"_AlphaFold")
-    elif AlphaFold_list[i] == None and pdb_list[i][0] != None:
-        matrix = retrieving_score(fasta_list[i].identifier, pdb_list[i][0].chain)
+    elif alphafold_list[i] == None and pdb_list[i][0] != None:
+        matrix = retrieving_score(pdb_list[i][0].identifier[0:4]+"_"+fasta_list[i].identifier, pdb_list[i][0].chain)
     else:
         print("No PDB files were obtained. Flexibility cannot be calculated")
         plot = False
