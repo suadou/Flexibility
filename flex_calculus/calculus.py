@@ -1,5 +1,6 @@
 """
 Calculate the flexibility score from a PDB file of different origins.
+
 Given a certain PDB file as input, the program identifies its source
 (NMR, X-ray or AlphaFold prediction) and calculates an appropriate flexibility
 score for each residue in described in the file (only considering backbone atoms).
@@ -13,7 +14,7 @@ import matplotlib.pyplot as plt
 
 
 class Atom:
-    """ Class storing the information given for each atom in the input PDB file. """
+    """Class storing the information given for each atom in the input PDB file."""
 
     def __init__(self, line):
         self.name = line[11:16].strip()
