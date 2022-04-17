@@ -8,13 +8,13 @@ import configparser
 
 # Arguments for the application
 parser = argparse.ArgumentParser(
-        description="flexibility.py is a standalone application which computes a flexibility score from a protein sequence contained in a FASTA or multi-FASTA file. It is based on experimental data from SwissProt PDB files or models proposed by AlphaFold. It retreats a parse-able text file and a graphical representation of flexibility")
+        description="flexibility.py is a standalone application which computes a flexibility score from a protein sequence contained in a FASTA or multi-FASTA file. It is based on experimental data from SwissProt PDB files or models proposed by AlphaFold. It retrieves a parseable text file containing a flexibility score for each residue in the input sequence/s and a graphical representation of flexibility")
 parser.add_argument('-i', '-in', '--input', dest='input_file', action='store',
                     help='FASTA or Multi-FASTA protein sequence input file', required=True, default=None)
 parser.add_argument('-o', '-out', '--output', dest='output_file', action='store',
-                    help='Protein flexibility output file. It will give 2 files ([].txt - Parseable text file) and ([].png - Graphycal representation of flexibility scores). If 2 or more sequences are provided the names will be []_[FASTA identifier].', required=False, default='flexibility_output')
+                    help='Prefix of protein flexibility output files. It will generate 2 files ([prefix].out - Parseable text file) and ([prefix].png - Graphycal representation of flexibility scores). If 2 or more sequences are provided, the prefixes of the files will have the format [prefix]_[FASTA identifier].', required=False, default='flexibility_output')
 parser.add_argument('-alpha', '--alpha_threshold', dest='alphafold_threshold', action='store',
-                    help='AlphaFold identity threshold. It set the threshold of AlphaFold identity of the query to use it as the true complete structure.', required=False, default=0.95)
+                    help='AlphaFold identity threshold. It sets the threshold of AlphaFold identity above which a match of the query will be used as the true complete structure.', required=False, default=0.95)
 options = parser.parse_args()
 args, leftovers = parser.parse_known_args()
 
@@ -22,11 +22,12 @@ args, leftovers = parser.parse_known_args()
 
 def alphafold(query, local, database=None):
     """
-    Calls the function needed to search for match on SwissProt database using BLASTp and download a PDB file of the best match if it exists.
-    The function return a PDB object from PDB.request module.
+    Calls the function needed to search for a match on SwissProt database using BLASTp and download a PDB file of the best match if it exists.
+    
+    The function returns a PDB object from PDB.request module.
     The arguments are the following:
-        query - It is a Query class from FASTA.read module wich contains sequence and identifier.
-        local - True for a local search and False for a API-mediated
+        query - It is a Query class from FASTA.read module which contains sequence and identifier.
+        local - True for a local search and False for an API-mediated one
         database - Path for the local database
     """
     if local == False:
@@ -50,11 +51,12 @@ def alphafold(query, local, database=None):
 
 def pdb(query, local, database=None):
     """
-    Calls the function needed to search for match on PDB database using BLASTp and download a PDB file of the best match if it exists.
-    The function return a PDB object from PDB.request module.
+    Calls the function needed to search for a match on PDB database using BLASTp and download a PDB file of the best match if it exists.
+    
+    The function returns a PDB object from PDB.request module.
     The arguments are the following:
-        query - It is a Query class from FASTA.read module wich contains sequence and identifier.
-        local - True for a local search and False for a API-mediated
+        query - It is a Query class from FASTA.read module which contains sequence and identifier.
+        local - True for a local search and False for an API-mediated one
         database - Path for the local database
     """
     if local == False:
@@ -76,9 +78,7 @@ def pdb(query, local, database=None):
                     query.identifier, seq[0], seq[0][5:], './'+ seq[0] + '_' + query.identifier + '.pdb', seq[1], seq[2], seq[3], seq[4])
 
 def retrieving_score(pdb_prefix, chain_id=None):
-    """
-    Calls the functions needed to calculate the flexibility score of a PDB file. It returns a array with them.
-    """
+    """Calls the functions needed to calculate the flexibility score of a PDB file. It returns an array containing them."""
     print(
         f"Computing flexibility score on {pdb_prefix}...")
     matrix = calculus.general_calculation(
@@ -87,10 +87,10 @@ def retrieving_score(pdb_prefix, chain_id=None):
     return matrix
 
 
-
 # Read the configure archive to determine local or online BLASTp search
 config = configparser.ConfigParser()
 config.read('config.ini')
+
 # Read the FASTA file provided
 print(f"Reading {options.input_file} file.")
 fasta_list = read.fasta_parser(options.input_file)
@@ -100,20 +100,19 @@ print(f"{len(fasta_list)} record/s was/were read.")
 pdb_list = [[]]
 alphafold_list = []
 
-
 # Threading for API BLASTp. Online version
 if config['blast']['local'] == 'False':
     threads = len(fasta_list)
     jobs = []
-    # Loop to for all sequences provided
+    # Loop through all sequences provided
     for i in range(0, threads):
         print(
             f"Searching similar sequences to {fasta_list[i].identifier} in PDB and SwissProt databases using BLASTp server...")
-        # Thread to PDB database
+        # Thread for PDB database
         thread = threading.Thread(
             target=pdb_list[i].append(pdb(fasta_list[i], False)))
         jobs.append(thread)
-        # Thread to SwissProt database
+        # Thread for SwissProt database
         thread = threading.Thread(target=alphafold_list.append(
             alphafold(fasta_list[i], False)))
         jobs.append(thread)
@@ -126,7 +125,7 @@ if config['blast']['local'] == 'False':
     for j in jobs:
         j.join()
     
-    # For each AlphaFold match check if the identity is higher than -alpha to search for PDB linked to its ids
+    # For each AlphaFold match, check if the identity is higher than -alpha to search for PDB linked to its IDs
     i = 0
     for element in alphafold_list:
         if element != None and element.identity > float(options.alphafold_threshold):
@@ -152,7 +151,7 @@ if config['blast']['local'] == 'False':
 
 # Local version
 elif config['blast']['local'] == 'True':
-    # Loop to go for all sequences provided
+    # Loop through all sequences provided
     for i in range(0, len(fasta_list)):
         # Searching for AlphaFold matches
         print(
@@ -165,7 +164,7 @@ elif config['blast']['local'] == 'True':
         except (IndexError, AttributeError):
             alphafold_list.append(None)
             print("No AlphaFold match was found")
-        # Searching for PDB files linked to the SwissProt id if identity is higher than a -alpha threshold
+        # Searching for PDB files linked to the SwissProt ID if identity is higher than -alpha threshold
         if alphafold_list[i] != None and alphafold_list[i].identity > float(options.alphafold_threshold):
             print(
                 f"The model fits with {alphafold_list[i].identifier.split('|')[1]} with {alphafold_list[i].identity} of identity \nSearching PDB files linked to the UniProt code")
@@ -184,7 +183,7 @@ elif config['blast']['local'] == 'True':
                         pdb_list[i].append(request.Pdb(fasta_list[i].identifier, pdb_hit[0], pdb_hit[1], './'
                                                     + pdb_hit[0] + '_' + fasta_list[i].identifier + '.pdb', 1, pdb_hit[2], pdb_hit[3], []))
                         print("Done")
-            # If no PDB is found linked to Swissprot id, it seeks for PDBs match using BLASTp
+            # If no PDB is found linked to Swissprot ID, it seeks for PDBs match using BLASTp
             else:
                 print(f"No PDB sequences found linked to {alphafold_list[i].identifier.split('|')[1]}")
                 try:
@@ -195,7 +194,7 @@ elif config['blast']['local'] == 'True':
                 except (IndexError, AttributeError):
                     pdb_list[i].append(None)
                     print(f"No PDB match was found")    
-        # If identity AlphaFold is lower than -alpha it seeks for PDBs matches using BLASTp
+        # If AlphaFold's identity is lower than -alpha, it seeks for PDB matches using BLASTp
         else:
             try:
                 print(
