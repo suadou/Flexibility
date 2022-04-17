@@ -139,7 +139,7 @@ elif config['blast']['local'] == 'True':
                                                     + pdb[0] + '_' + fasta_list[i].identifier + '.pdb', 1, pdb[2], pdb[3], []))
                         print("Done")
             else:
-                print("No PDB sequences found linked to {AlphaFold_list[i].identifier.split('|')[1]}")
+                print("No PDB sequences found linked to "+ str({AlphaFold_list[i].identifier.split('|')[1]}).strip("''{}"))
                 try:
                     PDB_list[i].append(
                         PDB(fasta_list[i], True, config['blast']['PDBdb_path']))
