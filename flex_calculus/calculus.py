@@ -1,6 +1,5 @@
 """
 Calculate the flexibility score from a PDB file of different origins.
-
 Given a certain PDB file as input, the program identifies its source
 (NMR, X-ray or AlphaFold prediction) and calculates an appropriate flexibility
 score for each residue in described in the file (only considering backbone atoms).
@@ -35,7 +34,6 @@ class Atom:
 class PDB:
     """
     Object parsing the content of a PDB file from a protein obtained through NMR.
-
     It only stores information regarding lines starting with 'ATOM' as well as the
     number of model to which each set of atoms corresponds.
     """
@@ -125,7 +123,6 @@ class RMSDcalculator:
 class NMR(object):
     """
     Object containing the parsing of NMR files.
-
     It calculates the average structure among the models and retrieves the model that has
     the highest similarity to it.
     """
@@ -226,7 +223,6 @@ class NMR(object):
 def calculation_from_NMR(pdb_file, name_chain):
     """
     Calculate RMSF of each residue in a PDB file of a protein obtained by NMR.
-
     As a reference model for the RMSD computations, the centroid is used (the structure
     that is least different from the mean structure of all the models in the PDB file).
     """
@@ -251,7 +247,7 @@ def calculation_from_NMR(pdb_file, name_chain):
     scores = []
 
     # Write the header of the output file
-    scores.append(["ResName", "Chain", "ResID", "RMSF"])
+    scores.append(["ResName", "Chain", "ResID", "Flex_score"])
 
     # Generate an array with flexibility scores
     flexibility = []
@@ -286,7 +282,6 @@ def rmsf_Bfactor(atoms):
 def calculation_from_crystal(pdb_file, name_chain):
     """
     Calculate RMSF of each residue in a PDB file of a protein obtained by X-ray.
-
     The RMSF is calculated from the B-factor values (RMSF = sqrt(3*B/(8*pi**2))).
     """
 
@@ -365,7 +360,6 @@ def rmsf_pLLDT(atoms):
 def calculation_from_alphafold(pdb_file):
     """
     Calculate RMSF of each residue in a PDB file predicted by AlphaFold.
-
     The RMSF is calculated from the pLDDT values (RMSF = log10(100-pLDDT)).
     """
     # Read PDB file
@@ -397,7 +391,7 @@ def calculation_from_alphafold(pdb_file):
     scores = []
 
     # Write the header of the output file
-    scores.append(["ResName", "Chain", "ResID", "RMSF"])
+    scores.append(["ResName", "Chain", "ResID", "Flex_score"])
 
     # Generate an array with flexibility scores
     flexibility = []
@@ -418,7 +412,6 @@ def calculation_from_alphafold(pdb_file):
 
 def general_calculation(pdb_file, name_chain = None):
     """Calls the functions necessary to obtain the flexibility score.
-
     Based on the mehod indicated in the PDB file to obtain the structure,
     it chooses the method that must be used to calculate the flexbility score.
     """
@@ -436,7 +429,6 @@ def general_calculation(pdb_file, name_chain = None):
 def general_calculation_multiple(pdb_list, alphafold):
     """Calls the functions necessary to obtain the flexibility score of a list
     of PDB files.
-
     Based on the mehod indicated in the PDB file to obtain the structure,
     it chooses the method that must be used to calculate the flexbility score.
     """
