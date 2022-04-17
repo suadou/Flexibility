@@ -16,9 +16,9 @@ class Query(object):
         self.identifier = identifier
 
 
-def FASTA_parser(input_file):
+def fasta_parser(input_file):
     """
-    FASTA_parser uses a FASTA or multi-FASTA protein file path and returns a list
+    fasta_parser uses a FASTA or multi-FASTA protein file path and returns a list
     of Query objects of each record.
     """
     fasta_sequence = SeqIO.parse(open(input_file), 'fasta')
